@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Waves, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 import heroImage from "@/assets/hero-ocean.jpg";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 const LandingPage = () => {
   const features = [
@@ -37,11 +38,14 @@ const LandingPage = () => {
             <Waves className="h-8 w-8 text-ocean" />
             <h1 className="text-2xl font-bold text-primary">MATSYA</h1>
           </div>
-          <Link to="/auth">
-            <Button variant="outline" className="border-ocean text-ocean hover:bg-ocean hover:text-ocean-foreground">
-              Get Started
-            </Button>
-          </Link>
+          <div className="flex items-center space-x-4">
+            <ThemeSwitcher />
+            <Link to="/auth">
+              <Button variant="outline" className="border-ocean text-ocean hover:bg-ocean hover:text-ocean-foreground">
+                Get Started
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 

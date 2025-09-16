@@ -3,6 +3,7 @@ import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import ThemeSwitcher from "@/components/ThemeSwitcher";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -54,7 +55,7 @@ const DashboardSidebar = () => {
     }
   }, []);
 
-  const isAdvancedUser = profile?.userType === "researcher" || profile?.userType === "policymaker";
+  const isAdvancedUser = profile?.userType === "researchers" || profile?.userType === "marine_business";
 
   const basicNavItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -143,16 +144,16 @@ const DashboardLayout = () => {
 
   const getUserTypeLabel = (type: string) => {
     switch (type) {
-      case "researcher": return "Marine Researcher";
-      case "policymaker": return "Policy Maker";
-      default: return "Ocean Enthusiast";
+      case "researchers": return "Researchers";
+      case "marine_business": return "Marine Business";
+      default: return "Students";
     }
   };
 
   const getUserTypeColor = (type: string) => {
     switch (type) {
-      case "researcher": return "bg-blue-100 text-blue-800";
-      case "policymaker": return "bg-purple-100 text-purple-800";
+      case "researchers": return "bg-blue-100 text-blue-800";
+      case "marine_business": return "bg-purple-100 text-purple-800";
       default: return "bg-green-100 text-green-800";
     }
   };
@@ -175,6 +176,7 @@ const DashboardLayout = () => {
               </div>
               
               <div className="flex items-center space-x-4">
+                <ThemeSwitcher />
                 {profile && (
                   <div className="hidden md:flex flex-col items-end">
                     <span className="text-sm font-medium">{profile.fullName}</span>

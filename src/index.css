@@ -108,6 +108,7 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -116,6 +117,65 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .ocean {
+    /* Deep ocean immersive theme */
+    --background: 220 100% 8%;
+    --foreground: 180 100% 90%;
+
+    --card: 220 85% 12%;
+    --card-foreground: 180 100% 90%;
+
+    --popover: 220 85% 12%;
+    --popover-foreground: 180 100% 90%;
+
+    /* Bright aqua primary for ocean theme */
+    --primary: 180 100% 70%;
+    --primary-foreground: 220 85% 8%;
+    --primary-glow: 200 100% 80%;
+
+    --secondary: 200 50% 20%;
+    --secondary-foreground: 180 100% 90%;
+
+    --muted: 220 50% 15%;
+    --muted-foreground: 180 50% 70%;
+
+    /* Coral accent remains vibrant */
+    --accent: 15 100% 70%;
+    --accent-foreground: 220 85% 8%;
+
+    /* Ocean teal enhanced */
+    --ocean-teal: 180 100% 60%;
+    --ocean-teal-foreground: 220 85% 8%;
+
+    --destructive: 0 90% 65%;
+    --destructive-foreground: 220 85% 8%;
+
+    --border: 200 40% 25%;
+    --input: 220 50% 18%;
+    --ring: 180 100% 70%;
+
+    /* Enhanced ocean gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(220, 100%, 8%), hsl(200, 100%, 15%), hsl(180, 100%, 25%));
+    --gradient-wave: linear-gradient(90deg, hsl(180, 100%, 60%), hsl(200, 100%, 70%), hsl(220, 100%, 80%));
+    --gradient-coral: linear-gradient(135deg, hsl(15, 100%, 70%), hsl(25, 100%, 75%));
+    --gradient-subtle: linear-gradient(180deg, hsl(220, 50%, 12%), hsl(200, 40%, 8%));
+
+    /* Glowing ocean shadows */
+    --shadow-ocean: 0 10px 40px -10px hsl(180 100% 70% / 0.4);
+    --shadow-wave: 0 5px 25px -5px hsl(200 100% 70% / 0.3);
+    --shadow-glow: 0 0 50px hsl(180 100% 70% / 0.5);
+
+    /* Sidebar ocean theme */
+    --sidebar-background: 220 85% 10%;
+    --sidebar-foreground: 180 80% 85%;
+    --sidebar-primary: 180 100% 70%;
+    --sidebar-primary-foreground: 220 85% 8%;
+    --sidebar-accent: 220 60% 18%;
+    --sidebar-accent-foreground: 180 80% 85%;
+    --sidebar-border: 200 40% 22%;
+    --sidebar-ring: 180 100% 70%;
   }
 }
 
