@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const ProfileSetup = () => {
   const [fullName, setFullName] = useState("");
-  const [userType, setUserType] = useState("normal");
+  const [userType, setUserType] = useState("students");
   const [organization, setOrganization] = useState("");
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,25 +21,25 @@ const ProfileSetup = () => {
 
   const userTypes = [
     {
-      value: "normal",
-      label: "Ocean Enthusiast",
-      description: "Interested in marine education and basic analytics",
-      icon: User,
-      features: ["AI Chatbot", "Basic Analytics", "Educational Content"]
-    },
-    {
-      value: "researcher",
-      label: "Marine Researcher",
-      description: "Academic or scientific researcher in marine sciences",
+      value: "students",
+      label: "Students",
+      description: "Students learning about marine sciences and ocean data",
       icon: GraduationCap,
-      features: ["Advanced Analytics", "Real-time Data", "Research Tools", "All Basic Features"]
+      features: ["AI Chatbot", "Get Educated Section", "Basic Analytics", "Learning Resources"]
     },
     {
-      value: "policymaker", 
-      label: "Policy Maker",
-      description: "Government official or policy decision maker",
+      value: "researchers",
+      label: "Researchers",
+      description: "Academic or scientific researchers in marine sciences",
+      icon: User,
+      features: ["Advanced Analytics", "Real-time Visualisation", "Research Tools", "All Student Features"]
+    },
+    {
+      value: "marine_business", 
+      label: "Marine Business",
+      description: "Marine industry professionals and business stakeholders",
       icon: Briefcase,
-      features: ["Policy Insights", "Trend Analysis", "Premium Reports", "All Basic Features"]
+      features: ["Business Insights", "Payment Gateway", "Premium Reports", "All Features"]
     }
   ];
 
@@ -140,7 +140,7 @@ const ProfileSetup = () => {
                 </RadioGroup>
               </div>
 
-              {(userType === "researcher" || userType === "policymaker") && (
+              {(userType === "researchers" || userType === "marine_business") && (
                 <div className="space-y-2">
                   <Label htmlFor="organization">Organization</Label>
                   <Input
