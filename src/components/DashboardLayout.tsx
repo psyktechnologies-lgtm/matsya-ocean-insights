@@ -32,7 +32,8 @@ import {
   TrendingUp, 
   Crown,
   User,
-  LogOut
+  LogOut,
+  Users
 } from "lucide-react";
 
 interface UserProfile {
@@ -59,9 +60,11 @@ const DashboardSidebar = () => {
 
   const basicNavItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "AI Chatbot", url: "/dashboard/chatbot", icon: MessageCircle },
-    { title: "Basic Analytics", url: "/dashboard/analytics", icon: BarChart3 },
+    { title: "AI Assistant", url: "/dashboard/chatbot", icon: MessageCircle },
+    { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
     { title: "Education", url: "/dashboard/education", icon: BookOpen },
+    { title: "Research Hub", url: "/dashboard/research", icon: BookOpen },
+    { title: "Community", url: "/dashboard/community", icon: Users },
   ];
 
   const advancedNavItems = [

@@ -185,6 +185,35 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
+  }
+  
+  /* Ensure proper text contrast in all themes */
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+  
+  .text-foreground {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .text-primary {
+    color: hsl(var(--primary)) !important;
+  }
+  
+  /* Fix button text visibility */
+  .bg-gradient-ocean {
+    background: var(--gradient-ocean);
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .bg-gradient-wave {
+    background: var(--gradient-wave);
+    color: hsl(var(--primary-foreground));
+  }
+  
+  .bg-gradient-coral {
+    background: var(--gradient-coral);
+    color: hsl(var(--accent-foreground));
   }
 }

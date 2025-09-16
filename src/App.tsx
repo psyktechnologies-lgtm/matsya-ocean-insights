@@ -15,6 +15,8 @@ import AnalyticsPage from "@/components/AnalyticsPage";
 import EducationPage from "@/components/EducationPage";
 import RealTimeDataPage from "@/components/RealTimeDataPage";
 import PremiumPage from "@/components/PremiumPage";
+import ResearchPage from "@/components/ResearchPage";
+import CommunityPage from "@/components/CommunityPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -46,6 +48,8 @@ const App = () => (
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="education" element={<EducationPage />} />
                 <Route path="realtime" element={<RealTimeDataPage />} />
+                <Route path="research" element={<ResearchPage />} />
+                <Route path="community" element={<CommunityPage />} />
                 <Route path="premium" element={<PremiumPage />} />
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

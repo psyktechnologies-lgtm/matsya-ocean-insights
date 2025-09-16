@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import CesiumMap from "@/components/CesiumMap";
 import { 
   BarChart3, 
   MessageCircle, 
@@ -11,7 +12,10 @@ import {
   Users, 
   Waves,
   Crown,
-  Activity
+  Activity,
+  Fish,
+  Database,
+  Globe
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -32,29 +36,43 @@ const Dashboard = () => {
     }
   }, []);
 
-  const isAdvancedUser = profile?.userType === "researcher" || profile?.userType === "policymaker";
+  const isAdvancedUser = profile?.userType === "researchers" || profile?.userType === "marine_business";
 
   const basicFeatures = [
     {
-      title: "AI Marine Chatbot",
+      title: "AI Marine Assistant",
       description: "Ask questions about marine ecosystems, species, and conservation",
       icon: MessageCircle,
       link: "/dashboard/chatbot",
       color: "text-blue-600"
     },
     {
-      title: "Basic Analytics",
-      description: "View fundamental marine data trends and statistics",
+      title: "Data Analytics",
+      description: "View marine data trends and comprehensive statistics",
       icon: BarChart3,
       link: "/dashboard/analytics", 
       color: "text-green-600"
     },
     {
-      title: "Educational Resources",
+      title: "Education Hub",
       description: "Learn about marine biology, conservation, and ocean science",
       icon: BookOpen,
       link: "/dashboard/education",
       color: "text-purple-600"
+    },
+    {
+      title: "Research Portal",
+      description: "Access latest research papers and marine science publications",
+      icon: Database,
+      link: "/dashboard/research",
+      color: "text-ocean"
+    },
+    {
+      title: "Community Hub",
+      description: "Connect with researchers and marine science professionals",
+      icon: Users,
+      link: "/dashboard/community",
+      color: "text-accent"
     }
   ];
 
@@ -76,10 +94,10 @@ const Dashboard = () => {
   ];
 
   const mockStats = [
-    { label: "Marine Species Tracked", value: "12,450", change: "+5.2%" },
-    { label: "Research Papers", value: "8,234", change: "+12.1%" },
-    { label: "Ocean Zones Monitored", value: "156", change: "+3.8%" },
-    { label: "Active Researchers", value: "2,847", change: "+8.7%" },
+    { label: "OBIS Data Points", value: "150M+", change: "+5.2%", icon: Database },
+    { label: "Active Users", value: "12,543", change: "+12.1%", icon: Users },
+    { label: "Species Identified", value: "45,678", change: "+3.8%", icon: Fish },
+    { label: "Real-time Streams", value: "24/7", change: "Live", icon: Activity },
   ];
 
   return (
@@ -88,25 +106,45 @@ const Dashboard = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-primary">
-            Welcome back, {profile?.fullName || "Ocean Explorer"}!
+            MATSYA Dashboard
           </h1>
           <p className="text-muted-foreground mt-1">
-            {isAdvancedUser 
-              ? "Access your advanced marine research tools and analytics"
-              : "Discover the wonders of marine science and conservation"
-            }
+            Marine Analytics, Taxonomy, and Species Analysis Platform
           </p>
         </div>
         <div className="flex items-center space-x-2">
           <Waves className="h-8 w-8 text-ocean" />
           {profile && (
-            <Badge variant={isAdvancedUser ? "default" : "secondary"} className="text-xs">
-              {profile.userType === "researcher" ? "Researcher" : 
-               profile.userType === "policymaker" ? "Policy Maker" : "Enthusiast"}
+            <Badge variant={isAdvancedUser ? "default" : "secondary"} className="text-xs bg-gradient-ocean text-white">
+              {profile.userType === "researchers" ? "Researcher" : 
+               profile.userType === "marine_business" ? "Marine Business" : "Student"}
             </Badge>
           )}
         </div>
       </div>
+
+      {/* Quick Access Actions */}
+      <div className="grid gap-4 md:grid-cols-3 mb-6">
+        <Link to="/dashboard/chatbot">
+          <Button className="h-24 bg-gradient-ocean flex flex-col items-center justify-center space-y-2 w-full">
+            <MessageCircle className="h-6 w-6" />
+            <span>AI Marine Assistant</span>
+          </Button>
+        </Link>
+        <Button className="h-24 bg-gradient-wave flex flex-col items-center justify-center space-y-2">
+          <Globe className="h-6 w-6" />
+          <span>3D Ocean Map</span>
+        </Button>
+        <Link to="/dashboard/research">
+          <Button className="h-24 bg-gradient-coral flex flex-col items-center justify-center space-y-2 w-full">
+            <BookOpen className="h-6 w-6" />
+            <span>Research Hub</span>
+          </Button>
+        </Link>
+      </div>
+
+      {/* Real-time 3D Marine Data Map */}
+      <CesiumMap />
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -116,7 +154,7 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.label}
               </CardTitle>
-              <Activity className="h-4 w-4 text-ocean" />
+              <stat.icon className="h-4 w-4 text-ocean" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
@@ -199,10 +237,16 @@ const Dashboard = () => {
                 View ocean statistics
               </Button>
             </Link>
-            <Link to="/dashboard/education">
+            <Link to="/dashboard/research">
               <Button variant="outline" className="w-full justify-start">
                 <BookOpen className="mr-2 h-4 w-4" />
-                Learn marine science
+                <span>Research papers</span>
+              </Button>
+            </Link>
+            <Link to="/dashboard/community">
+              <Button variant="outline" className="w-full justify-start">
+                <Users className="mr-2 h-4 w-4" />
+                <span>Join community</span>
               </Button>
             </Link>
           </div>
