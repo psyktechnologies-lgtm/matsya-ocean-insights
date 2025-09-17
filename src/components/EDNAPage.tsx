@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { 
-  DNA, 
+  Dna, 
   Search, 
   Database, 
   Upload,
@@ -90,7 +90,7 @@ const EDNAPage = () => {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Sequences</CardTitle>
-            <DNA className="h-4 w-4 text-ocean" />
+            <Dna className="h-4 w-4 text-ocean" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">32,355</div>
@@ -156,7 +156,7 @@ const EDNAPage = () => {
             </CardHeader>
             <CardContent>
               <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                <DNA className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                <Dna className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
                 <p className="text-sm text-muted-foreground mb-4">
                   Drop FASTQ/FASTA files here (.fastq, .fasta, .gz)
                 </p>

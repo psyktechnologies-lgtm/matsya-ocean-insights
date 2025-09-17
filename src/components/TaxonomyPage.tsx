@@ -10,7 +10,7 @@ import {
   TreePine, 
   Camera, 
   Microscope, 
-  DNA,
+  Dna,
   Star,
   Book,
   Globe
@@ -66,7 +66,7 @@ const TaxonomyPage = () => {
     {
       name: "DNA Barcoding",
       description: "Molecular identification using genetic sequences",
-      icon: DNA,
+      icon: Dna,
       accuracy: "99.1%"
     }
   ];
