@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import CesiumMap from "@/components/CesiumMap";
+import MarineMap from "@/components/MarineMap";
 import { 
   BarChart3, 
   MessageCircle, 
@@ -144,7 +144,7 @@ const Dashboard = () => {
       </div>
 
       {/* Real-time 3D Marine Data Map */}
-      <CesiumMap />
+      <MarineMap />
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

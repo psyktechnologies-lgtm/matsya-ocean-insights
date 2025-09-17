@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import MarineMap from './MarineMap';
 import { TrendingUp, Activity, MapPin, Thermometer, Waves, Fish, Satellite, RefreshCw } from "lucide-react";
 
 const RealTimeDataPage = () => {
@@ -204,6 +205,9 @@ const RealTimeDataPage = () => {
           </Card>
         ))}
       </div>
+
+      {/* Real-time Marine Data Map */}
+      <MarineMap className="h-[600px]" />
 
       {/* Live Monitoring Stations */}
       <div className="grid lg:grid-cols-2 gap-6">
