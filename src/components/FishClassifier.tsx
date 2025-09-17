@@ -5,6 +5,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import DownloadIcon from '@mui/icons-material/Download';
 import { classifyImage as apiClassify } from '../lib/api';
 import { useWebSocket } from '../hooks/useWebSocket';
+import type { ClassificationResult } from '../types/database';
 
 // Supported fish species
 const supportedSpecies = [
@@ -45,11 +46,18 @@ const FishClassifier: React.FC = () => {
     setLoading(true);
     try {
       const resp = await apiClassify(file);
+      // Convert ClassificationResult to MLClassificationResult format
+      const predictions: Record<string, number> = {};
+      predictions[resp.species] = resp.confidence;
+      resp.alternatives.forEach(alt => {
+        predictions[alt.species] = alt.confidence;
+      });
+      
       const result: MLClassificationResult = {
-        predictions: resp.predictions,
-        topPrediction: resp.topPrediction,
+        predictions,
+        topPrediction: [resp.species, resp.confidence],
         confidence: resp.confidence,
-        processingTime: resp.processingTime,
+        processingTime: 1500, // Mock processing time
       };
       setResults(result);
       setHistory(prev => [

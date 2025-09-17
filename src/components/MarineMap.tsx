@@ -1,13 +1,14 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography, IconButton, Drawer, List, ListItem, ListItemText, Chip, Button } from '@mui/material';
-import MapboxGL from 'mapbox-gl';
+import mapboxgl from 'mapbox-gl';
 import RoomIcon from '@mui/icons-material/Room';
 import LayersIcon from '@mui/icons-material/Layers';
 import { SpeciesOccurrence } from './SpeciesExplorer';
 import { fetchSpecies } from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
 import { useQueryClient } from '@tanstack/react-query';
+import type { Species } from '../types/database';
 
 // Mapbox access token (replace with your own for production)
 MapboxGL.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
@@ -44,7 +45,7 @@ interface MarineMapProps {
 
 const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<MapboxGL.Map | null>(null);
+  const mapRef = useRef<mapboxgl.Map | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSpecies, setSelectedSpecies] = useState<SpeciesOccurrence | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -64,7 +65,7 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
         if (mounted) {
           // replace markers by creating map after data arrives
           if (mapContainer.current && !mapRef.current) {
-            mapRef.current = new MapboxGL.Map({
+            mapRef.current = new mapboxgl.Map({
               container: mapContainer.current,
               style: 'mapbox://styles/mapbox/light-v10',
               center: [91.5, 22.2],
@@ -73,7 +74,22 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
             mapRef.current.on('load', () => setLoading(false));
           }
           // add markers
-          const data: SpeciesOccurrence[] = resp as SpeciesOccurrence[];
+          const resp = await fetchSpecies();
+          // Convert Species to SpeciesOccurrence format
+          const data: SpeciesOccurrence[] = resp.map(s => ({
+            id: s.id,
+            scientificName: s.scientific_name,
+            commonName: s.common_name,
+            latitude: s.latitude || 0,
+            longitude: s.longitude || 0,
+            depth: s.depth_range ? parseFloat(s.depth_range.split('-')[0]) : undefined,
+            dataSource: 'Database',
+            conservationStatus: s.conservation_status,
+            family: s.family,
+            habitat: s.habitat,
+            recordedDate: s.created_at,
+            qualityGrade: 'research'
+          }));
           data.forEach((species) => {
             const el = document.createElement('div');
             el.className = 'marker';
@@ -83,7 +99,7 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
             el.style.borderRadius = '50%';
             el.style.boxShadow = '0 0 6px rgba(0,0,0,0.2)';
             el.addEventListener('click', () => setSelectedSpecies(species));
-            new MapboxGL.Marker(el)
+            new mapboxgl.Marker(el)
               .setLngLat([species.longitude, species.latitude])
               .addTo(mapRef.current!);
           });
@@ -99,7 +115,7 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
   useEffect(() => {
     const latestMsg = messages[messages.length - 1];
     if (latestMsg && (latestMsg.type === 'obis_sync' || latestMsg.type === 'classification')) {
-      queryClient.invalidateQueries(['speciesData']);
+      queryClient.invalidateQueries({ queryKey: ['speciesData'] });
     }
   }, [messages, queryClient]);
 
@@ -131,7 +147,11 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
           <Typography variant="h6">Filtered Species</Typography>
           <List>
             {speciesData.map((s) => (
-              <ListItem button key={s.id} onClick={() => setSelectedSpecies(s)}>
+              <ListItem 
+                key={s.id} 
+                onClick={() => setSelectedSpecies(s)}
+                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+              >
                 <ListItemText primary={s.scientificName} secondary={s.commonName} />
                 <Chip label={s.conservationStatus} size="small" />
               </ListItem>

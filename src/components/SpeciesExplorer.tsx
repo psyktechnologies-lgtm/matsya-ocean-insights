@@ -20,8 +20,9 @@ import InfoIcon from '@mui/icons-material/Info';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchSpecies, obisSync } from '../lib/api';
 import { useWebSocket } from '../hooks/useWebSocket';
+import type { Species } from '../types/database';
 
-// Sample data structure
+// Legacy interface for backward compatibility - map to new Species type
 export interface SpeciesOccurrence {
   id: string;
   scientificName: string;
@@ -31,7 +32,10 @@ export interface SpeciesOccurrence {
   depth?: number;
   conservationStatus?: string;
   family?: string;
-  dataSource: 'OBIS' | 'GBIF' | 'WoRMS';
+  dataSource: 'OBIS' | 'GBIF' | 'WoRMS' | 'Database';
+  habitat?: string;
+  recordedDate?: string;
+  qualityGrade?: string;
 }
 
 // Mock data for demo
@@ -131,7 +135,21 @@ const SpeciesExplorer: React.FC = () => {
     queryFn: async () => {
       try {
         const resp = await fetchSpecies();
-        return resp as SpeciesOccurrence[];
+        // Convert Species to SpeciesOccurrence format
+        return resp.map(s => ({
+          id: s.id,
+          scientificName: s.scientific_name,
+          commonName: s.common_name,
+          latitude: s.latitude || 0,
+          longitude: s.longitude || 0,
+          depth: s.depth_range ? parseFloat(s.depth_range.split('-')[0]) : undefined,
+          dataSource: 'Database',
+          conservationStatus: s.conservation_status,
+          family: s.family,
+          habitat: s.habitat,
+          recordedDate: s.created_at,
+          qualityGrade: 'research'
+        }));
       } catch (e) {
         return mockSpecies;
       }
