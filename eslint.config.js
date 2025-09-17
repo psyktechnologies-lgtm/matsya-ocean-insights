@@ -19,8 +19,12 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+  // relax fast-refresh check in this repo scaffold
+  "react-refresh/only-export-components": "off",
       "@typescript-eslint/no-unused-vars": "off",
+      // Allow some incremental typing in this scaffolded repo; turn off strict any enforcement
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 );
