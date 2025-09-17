@@ -9,6 +9,7 @@ import { BarChart3, TrendingUp, TrendingDown, Fish, Waves, Thermometer, RefreshC
 import { fetchSpecies, obisSync, fetchOBISData } from "@/lib/api";
 import { useWebSocket } from "@/hooks/useWebSocket";
 import type { Species } from "@/types/database";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 interface RealTimeStats {
   oceanTemperature: number;
@@ -30,6 +31,12 @@ interface ResearchMetrics {
   };
 }
 
+interface TemperatureDataPoint {
+  time: string;
+  temperature: number;
+  timestamp: number;
+}
+
 const AnalyticsPage = () => {
   const [realTimeData, setRealTimeData] = useState<RealTimeStats>({
     oceanTemperature: 15.2,
@@ -37,10 +44,37 @@ const AnalyticsPage = () => {
     oceanPH: 8.04,
     lastUpdated: new Date().toISOString()
   });
+
+  const [temperatureHistory, setTemperatureHistory] = useState<TemperatureDataPoint[]>([]);
   
   const [isRefreshing, setIsRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const { messages } = useWebSocket('/ws/updates');
+
+  // Initialize temperature history with some sample data
+  useEffect(() => {
+    const now = Date.now();
+    const initialData: TemperatureDataPoint[] = [];
+    
+    for (let i = 29; i >= 0; i--) {
+      const timestamp = now - i * 10000; // 10 seconds intervals
+      const baseTemp = 15.2;
+      const variation = Math.sin(i * 0.1) * 0.5 + Math.random() * 0.3 - 0.15;
+      
+      initialData.push({
+        time: new Date(timestamp).toLocaleTimeString('en-US', { 
+          hour12: false, 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        }),
+        temperature: +(baseTemp + variation).toFixed(2),
+        timestamp
+      });
+    }
+    
+    setTemperatureHistory(initialData);
+  }, []);
 
   // Real-time species data query
   const { data: speciesData, refetch: refetchSpecies } = useQuery<Species[]>({
@@ -97,16 +131,56 @@ const AnalyticsPage = () => {
   // Simulate real-time ocean data updates
   useEffect(() => {
     const interval = setInterval(() => {
-      setRealTimeData(prev => ({
-        oceanTemperature: prev.oceanTemperature + (Math.random() - 0.5) * 0.1,
-        speciesCount: prev.speciesCount + Math.floor(Math.random() * 5),
-        oceanPH: prev.oceanPH + (Math.random() - 0.5) * 0.01,
-        lastUpdated: new Date().toISOString()
-      }));
+      const now = Date.now();
+      const currentTime = new Date(now).toLocaleTimeString('en-US', { 
+        hour12: false, 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      });
+      
+      setRealTimeData(prev => {
+        const newTemp = prev.oceanTemperature + (Math.random() - 0.5) * 0.1;
+        
+        // Update temperature history chart
+        setTemperatureHistory(prevHistory => {
+          const newDataPoint: TemperatureDataPoint = {
+            time: currentTime,
+            temperature: +newTemp.toFixed(2),
+            timestamp: now
+          };
+          
+          // Keep only last 30 data points (5 minutes of data)
+          const newHistory = [...prevHistory.slice(-29), newDataPoint];
+          return newHistory;
+        });
+        
+        return {
+          oceanTemperature: newTemp,
+          speciesCount: prev.speciesCount + Math.floor(Math.random() * 5),
+          oceanPH: prev.oceanPH + (Math.random() - 0.5) * 0.01,
+          lastUpdated: new Date().toISOString()
+        };
+      });
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(interval);
   }, []);
+
+  // Custom tooltip for temperature chart
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+          <p className="text-sm font-medium">{`Time: ${label}`}</p>
+          <p className="text-sm text-blue-600">
+            {`Temperature: ${payload[0].value}°C`}
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Manual refresh function
   const handleRefresh = async () => {
@@ -371,18 +445,41 @@ const AnalyticsPage = () => {
             <CardDescription>Live global sea surface temperature data</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="h-64 bg-gradient-subtle rounded-lg flex items-center justify-center relative">
-              <div className="text-center text-muted-foreground">
-                <BarChart3 className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>Current Temperature: {realTimeData.oceanTemperature.toFixed(1)}°C</p>
-                <p className="text-xs">Live temperature monitoring active</p>
-              </div>
-              <div className="absolute top-2 right-2">
-                <Badge variant="outline" className="text-green-600">
-                  <Activity className="w-3 h-3 mr-1" />
-                  Live
-                </Badge>
-              </div>
+            <div className="h-64 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={temperatureHistory}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <XAxis 
+                    dataKey="time" 
+                    stroke="#64748b"
+                    fontSize={12}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <YAxis 
+                    stroke="#64748b"
+                    fontSize={12}
+                    tick={{ fontSize: 12 }}
+                    domain={['dataMin - 2', 'dataMax + 2']}
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line 
+                    type="monotone" 
+                    dataKey="temperature" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
+                    activeDot={{ r: 5, stroke: '#3b82f6', strokeWidth: 2 }}
+                    animationDuration={300}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+              <span>Current: {realTimeData.oceanTemperature.toFixed(1)}°C</span>
+              <span className="flex items-center gap-1">
+                <Activity className="w-3 h-3 text-green-500" />
+                Live • Last 5 minutes
+              </span>
             </div>
           </CardContent>
         </Card>
