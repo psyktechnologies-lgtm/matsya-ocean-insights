@@ -82,93 +82,85 @@ const MarineResearchDashboard: React.FC = () => {
         </Toolbar>
       </AppBar>
 
-      <Grid container spacing={2} sx={{ p: 3 }}>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' }, gap: 2, p: 3 }}>
         {stats.map((stat) => (
-          <Grid item xs={12} sm={6} md={3} key={stat.label}>
-            <Card elevation={3}>
-              <CardContent>
-                <Box display="flex" alignItems="center" justifyContent="space-between">
-                  <Box>{stat.icon}</Box>
-                  <Typography variant="h5" fontWeight="bold">{stat.value}</Typography>
-                </Box>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>{stat.label}</Typography>
-              </CardContent>
-            </Card>
-          </Grid>
+          <Card elevation={3} key={stat.label}>
+            <CardContent>
+              <Box display="flex" alignItems="center" justifyContent="space-between">
+                <Box>{stat.icon}</Box>
+                <Typography variant="h5" fontWeight="bold">{stat.value}</Typography>
+              </Box>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>{stat.label}</Typography>
+            </CardContent>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
-      <Grid container spacing={2} sx={{ p: 3 }}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Species Distribution Over Time</Typography>
-              <Box sx={{ height: 200, mt: 2 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={speciesDistribution} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <defs>
-                      <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
-                        <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="year" />
-                    <YAxis />
-                    <ReTooltip />
-                    <Area type="monotone" dataKey="count" stroke="#8884d8" fillOpacity={1} fill="url(#colorCount)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-  </Grid>
-  <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Biodiversity by Marine Regions</Typography>
-              <Box sx={{ height: 200, mt: 2 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={biodiversityRegions} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                    <XAxis dataKey="region" />
-                    <YAxis />
-                    <ReTooltip />
-                    <Bar dataKey="count" fill="#82ca9d" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-  </Grid>
-  <Grid item xs={12} md={3}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Conservation Status Breakdown</Typography>
-              <Box sx={{ height: 200, mt: 2 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={conservationStatus}
-                      dataKey="value"
-                      nameKey="status"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={60}
-                      fill="#8884d8"
-                      label
-                    >
-                      {conservationStatus.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={["#0088FE", "#00C49F", "#FFBB28", "#FF6B6B"][index % 4]} />
-                      ))}
-                    </Pie>
-                    <Legend />
-                    <ReTooltip />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-            </Card>
-        </Grid>
-      </Grid>
+      <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '2fr 1fr 1fr' }, gap: 2, p: 3 }}>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Species Distribution Over Time</Typography>
+            <Box sx={{ height: 200, mt: 2 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={speciesDistribution} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8884d8" stopOpacity={0.8} />
+                      <stop offset="95%" stopColor="#8884d8" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis dataKey="year" />
+                  <YAxis />
+                  <ReTooltip />
+                  <Area type="monotone" dataKey="count" stroke="#8884d8" fillOpacity={1} fill="url(#colorCount)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Biodiversity by Marine Regions</Typography>
+            <Box sx={{ height: 200, mt: 2 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={biodiversityRegions} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="region" />
+                  <YAxis />
+                  <ReTooltip />
+                  <Bar dataKey="count" fill="#82ca9d" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent>
+            <Typography variant="h6">Conservation Status Breakdown</Typography>
+            <Box sx={{ height: 200, mt: 2 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={conservationStatus}
+                    dataKey="value"
+                    nameKey="status"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={60}
+                    fill="#8884d8"
+                    label
+                  >
+                    {conservationStatus.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={["#0088FE", "#00C49F", "#FFBB28", "#FF6B6B"][index % 4]} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <ReTooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </Box>
+          </CardContent>
+        </Card>
+      </Box>
     </Box>
   );
 };
