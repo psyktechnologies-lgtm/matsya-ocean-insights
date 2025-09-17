@@ -3,6 +3,8 @@ import { Box, Typography, Card, CardContent, Button, CircularProgress, Slider, I
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import HistoryIcon from '@mui/icons-material/History';
 import DownloadIcon from '@mui/icons-material/Download';
+import { classifyImage as apiClassify } from '../lib/api';
+import { useWebSocket } from '../hooks/useWebSocket';
 
 // Supported fish species
 const supportedSpecies = [
@@ -39,25 +41,21 @@ const FishClassifier: React.FC = () => {
   };
 
   // Real ML API call
-  import('@/lib/api').then(({ classifyImage: apiClassify }) => {
-    // noop - import for TS resolution
-  });
   const classifyImage = async (file: File) => {
     setLoading(true);
     try {
-      const { classifyImage: apiClassify } = await import('@/lib/api');
       const resp = await apiClassify(file);
-      const mockResult: MLClassificationResult = {
+      const result: MLClassificationResult = {
         predictions: resp.predictions,
         topPrediction: resp.topPrediction,
         confidence: resp.confidence,
         processingTime: resp.processingTime,
       };
-      setResults(mockResult);
+      setResults(result);
       setHistory(prev => [
         {
           imageUrl: URL.createObjectURL(file),
-          result: mockResult,
+          result,
           timestamp: new Date().toLocaleString(),
         },
         ...prev,
@@ -70,7 +68,7 @@ const FishClassifier: React.FC = () => {
 
   // Listen for classification events via WS
   // Use WebSocket hook at top-level to follow rules of hooks
-  const { messages: wsMessages, connected: wsConnected } = (await import('@/hooks/useWebSocket').then(m => m.useWebSocket('/ws/updates')));
+  const { messages: wsMessages, connected: wsConnected } = useWebSocket('/ws/updates');
 
   // Handle upload
   const handleUpload = () => {

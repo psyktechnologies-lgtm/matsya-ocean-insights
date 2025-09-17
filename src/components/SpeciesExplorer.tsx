@@ -60,47 +60,8 @@ const mockSpecies: SpeciesOccurrence[] = [
   },
 ];
 
-// Columns for DataGrid
-const columns: GridColDef[] = [
-  { field: 'scientificName', headerName: 'Scientific Name', flex: 1, sortable: true },
-  { field: 'commonName', headerName: 'Common Name', flex: 1, sortable: true },
-  { field: 'family', headerName: 'Family', flex: 1, sortable: true },
-  {
-    field: 'location',
-    headerName: 'Location (Lat/Lng)',
-    flex: 1,
-    valueGetter: (params: any) => params?.row ? `${params.row.latitude}, ${params.row.longitude}` : '',
-    renderCell: (params: any) => (
-      <Typography variant="body2">{params.value}</Typography>
-    ),
-  },
-  {
-    field: 'depth',
-    headerName: 'Depth (m)',
-    flex: 1,
-    renderCell: (params: any) => (
-      <Typography variant="body2">{params.value ? `${params.value} m` : '-'}</Typography>
-    ),
-  },
-  {
-    field: 'conservationStatus',
-    headerName: 'Conservation Status',
-    flex: 1,
-    renderCell: (params: any) => (
-      <Chip
-        label={params.value}
-        color={
-          params.value === 'Least Concern' ? 'success' :
-          params.value === 'Vulnerable' ? 'warning' :
-          params.value === 'Endangered' ? 'error' : 'default'
-        }
-        size="small"
-      />
-    ),
-  },
-  { field: 'dataSource', headerName: 'Data Source', flex: 1 },
-  // Details column will be added inside the SpeciesExplorer component to access setSelectedId
-];
+// Columns moved inside the component to access setSelectedId
+
 
 const SpeciesExplorer: React.FC = () => {
   const [search, setSearch] = useState('');
@@ -108,6 +69,61 @@ const SpeciesExplorer: React.FC = () => {
   const [exporting, setExporting] = useState(false);
 
   const queryClient = useQueryClient();
+
+  // Columns for DataGrid (defined here to access setSelectedId)
+  const columns: GridColDef[] = [
+    { field: 'scientificName', headerName: 'Scientific Name', flex: 1, sortable: true },
+    { field: 'commonName', headerName: 'Common Name', flex: 1, sortable: true },
+    { field: 'family', headerName: 'Family', flex: 1, sortable: true },
+    {
+      field: 'location',
+      headerName: 'Location (Lat/Lng)',
+      flex: 1,
+      valueGetter: (params: any) => params?.row ? `${params.row.latitude}, ${params.row.longitude}` : '',
+      renderCell: (params: any) => (
+        <Typography variant="body2">{params.value}</Typography>
+      ),
+    },
+    {
+      field: 'depth',
+      headerName: 'Depth (m)',
+      flex: 1,
+      renderCell: (params: any) => (
+        <Typography variant="body2">{params.value ? `${params.value} m` : '-'}</Typography>
+      ),
+    },
+    {
+      field: 'conservationStatus',
+      headerName: 'Conservation Status',
+      flex: 1,
+      renderCell: (params: any) => (
+        <Chip
+          label={params.value}
+          color={
+            params.value === 'Least Concern' ? 'success' :
+            params.value === 'Vulnerable' ? 'warning' :
+            params.value === 'Endangered' ? 'error' : 'default'
+          }
+          size="small"
+        />
+      ),
+    },
+    { field: 'dataSource', headerName: 'Data Source', flex: 1 },
+    {
+      field: 'details',
+      headerName: 'Details',
+      sortable: false,
+      filterable: false,
+      width: 100,
+      renderCell: (params: any) => (
+        <Tooltip title="View details">
+          <IconButton aria-label={`view-details-${params.row.id}`} size="small" onClick={() => setSelectedId(params.row.id)}>
+            <InfoIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      ),
+    },
+  ];
 
   // Real API-backed data fetching
   const { data = mockSpecies, isLoading, refetch } = useQuery<SpeciesOccurrence[]>({
@@ -183,7 +199,7 @@ const SpeciesExplorer: React.FC = () => {
     setSyncing(true);
     try {
       await obisSync();
-      queryClient.invalidateQueries(['speciesData']);
+      queryClient.invalidateQueries({ queryKey: ['speciesData'] });
     } catch (err) {
       // handle error lightly for now
       console.error('OBIS sync failed', err);
