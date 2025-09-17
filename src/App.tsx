@@ -17,6 +17,12 @@ import RealTimeDataPage from "@/components/RealTimeDataPage";
 import PremiumPage from "@/components/PremiumPage";
 import ResearchPage from "@/components/ResearchPage";
 import CommunityPage from "@/components/CommunityPage";
+import DataIngestionPage from "@/components/DataIngestionPage";
+import TaxonomyPage from "@/components/TaxonomyPage";
+import OtolithPage from "@/components/OtolithPage";
+import EDNAPage from "@/components/EDNAPage";
+import CorrelationAnalysisPage from "@/components/CorrelationAnalysisPage";
+import APIDocumentationPage from "@/components/APIDocumentationPage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -51,6 +57,12 @@ const App = () => (
                 <Route path="research" element={<ResearchPage />} />
                 <Route path="community" element={<CommunityPage />} />
                 <Route path="premium" element={<PremiumPage />} />
+                <Route path="data-ingestion" element={<DataIngestionPage />} />
+                <Route path="taxonomy" element={<TaxonomyPage />} />
+                <Route path="otolith" element={<OtolithPage />} />
+                <Route path="edna" element={<EDNAPage />} />
+                <Route path="correlation" element={<CorrelationAnalysisPage />} />
+                <Route path="api-docs" element={<APIDocumentationPage />} />
               </Route>
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
