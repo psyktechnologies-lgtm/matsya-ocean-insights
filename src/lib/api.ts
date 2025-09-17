@@ -248,30 +248,123 @@ export const uploadEDNASample = async (file: File, metadata: {
   notes?: string;
 }): Promise<EDNASample> => {
   try {
+    // Enhanced file validation
+    const allowedTypes = [
+      'text/plain', // FASTA/FASTQ files
+      'application/x-fasta',
+      'application/x-fastq',
+      'text/x-fasta',
+      'text/x-fastq'
+    ];
+    
+    const fileExtension = file.name.toLowerCase().split('.').pop();
+    const allowedExtensions = ['fasta', 'fa', 'fastq', 'fq', 'txt'];
+    
+    if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension || '')) {
+      throw new Error('Invalid file type. Please upload FASTA (.fasta, .fa) or FASTQ (.fastq, .fq) files.');
+    }
+
+    // Check file size (max 100MB)
+    const maxSize = 100 * 1024 * 1024; // 100MB
+    if (file.size > maxSize) {
+      throw new Error('File size exceeds 100MB limit.');
+    }
+
+    // Basic sequence analysis
+    let sequenceCount = 0;
+    let avgSequenceLength = 0;
+    let fileFormat = 'unknown';
+    
+    try {
+      const fileContent = await file.text();
+      
+      // Determine file format and count sequences
+      if (file.name.toLowerCase().includes('fastq') || file.name.toLowerCase().includes('.fq')) {
+        fileFormat = 'fastq';
+        const sequences = fileContent.match(/^@/gm) || [];
+        sequenceCount = sequences.length;
+        
+        // Calculate average sequence length for FASTQ
+        const lines = fileContent.split('\n');
+        let totalLength = 0;
+        let seqLines = 0;
+        for (let i = 0; i < lines.length; i++) {
+          if (i % 4 === 1 && lines[i]) { // Sequence line in FASTQ
+            totalLength += lines[i].length;
+            seqLines++;
+          }
+        }
+        avgSequenceLength = seqLines > 0 ? Math.round(totalLength / seqLines) : 0;
+      } else {
+        fileFormat = 'fasta';
+        const sequences = fileContent.match(/^>/gm) || [];
+        sequenceCount = sequences.length;
+        
+        // Calculate average sequence length for FASTA
+        const parts = fileContent.split('>').filter(part => part.trim());
+        let totalLength = 0;
+        for (const part of parts) {
+          const lines = part.split('\n').slice(1); // Skip header line
+          const sequence = lines.join('').replace(/\s/g, '');
+          totalLength += sequence.length;
+        }
+        avgSequenceLength = parts.length > 0 ? Math.round(totalLength / parts.length) : 0;
+      }
+    } catch (parseError) {
+      console.warn('Could not parse file content for analysis:', parseError);
+    }
+
     const supClient = getSupabaseClient();
     if (supClient && (import.meta.env.VITE_USE_SUPABASE === 'true')) {
-      // Upload file to Supabase Storage
-      const fileName = `${metadata.sample_id}_${Date.now()}_${file.name}`;
+      // Upload file to Supabase Storage with organized path
+      const fileName = `samples/${metadata.sample_id}/${Date.now()}_${file.name}`;
       const { data: uploadData, error: uploadError } = await supClient.storage
         .from('edna-files')
-        .upload(fileName, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('File upload error:', uploadError);
+        throw new Error('Failed to upload file: ' + uploadError.message);
+      }
       
-      // Create database record
+      // Get public URL for the uploaded file
+      const { data: urlData } = supClient.storage
+        .from('edna-files')
+        .getPublicUrl(uploadData.path);
+      
+      // Create database record with enhanced metadata
       const { data, error } = await supClient.from('edna_samples').insert({
         ...metadata,
         file_path: uploadData.path,
+        file_url: urlData.publicUrl,
         file_size: file.size,
         file_type: file.type,
-        status: 'uploaded'
+        file_format: fileFormat,
+        sequence_count: sequenceCount,
+        avg_sequence_length: avgSequenceLength,
+        status: 'uploaded',
+        processing_status: 'pending',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       }).select().single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Database insert error:', error);
+        throw new Error('Failed to save sample data: ' + error.message);
+      }
+      
       return data;
     }
   } catch (e) {
     console.warn('Supabase fallback to local API:', e);
+    
+    // Re-throw validation errors
+    if (e instanceof Error && (e.message.includes('Invalid file type') || e.message.includes('File size exceeds'))) {
+      throw e;
+    }
   }
   
   // Fallback to local API

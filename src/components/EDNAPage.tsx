@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { uploadEDNASample } from "@/lib/api";
 import { 
   Dna, 
   Search, 
@@ -15,11 +19,94 @@ import {
   FileText,
   Zap,
   Globe,
-  TestTube
+  TestTube,
+  CheckCircle,
+  AlertCircle,
+  Loader2
 } from "lucide-react";
+
+interface UploadFormData {
+  sample_id: string;
+  location_name: string;
+  latitude: string;
+  longitude: string;
+  collection_date: string;
+  depth_meters: string;
+  notes: string;
+}
 
 const EDNAPage = () => {
   const [searchSequence, setSearchSequence] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadForm, setUploadForm] = useState<UploadFormData>({
+    sample_id: "",
+    location_name: "",
+    latitude: "",
+    longitude: "",
+    collection_date: "",
+    depth_meters: "",
+    notes: ""
+  });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      toast.success(`File selected: ${file.name}`);
+    }
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      toast.error("Please select a file to upload");
+      return;
+    }
+
+    // Validate required fields
+    if (!uploadForm.sample_id || !uploadForm.location_name || !uploadForm.latitude || !uploadForm.longitude || !uploadForm.collection_date) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const metadata = {
+        sample_id: uploadForm.sample_id,
+        location_name: uploadForm.location_name,
+        latitude: parseFloat(uploadForm.latitude),
+        longitude: parseFloat(uploadForm.longitude),
+        collection_date: uploadForm.collection_date,
+        depth_meters: uploadForm.depth_meters ? parseFloat(uploadForm.depth_meters) : undefined,
+        notes: uploadForm.notes || undefined
+      };
+
+      const result = await uploadEDNASample(selectedFile, metadata);
+      
+      toast.success(`eDNA sample uploaded successfully! Sample ID: ${result.sample_id}`);
+      
+      // Reset form
+      setSelectedFile(null);
+      setUploadForm({
+        sample_id: "",
+        location_name: "",
+        latitude: "",
+        longitude: "",
+        collection_date: "",
+        depth_meters: "",
+        notes: ""
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error(error instanceof Error ? error.message : "Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const eDNASamples = [
     {
@@ -148,20 +235,151 @@ const EDNAPage = () => {
                   <CardTitle>Upload eDNA Sample</CardTitle>
                   <CardDescription>Upload sequencing data for environmental DNA analysis</CardDescription>
                 </div>
-                <Button>
-                  <Upload className="w-4 h-4 mr-2" />
-                  New Upload
-                </Button>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                <Dna className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-                <p className="text-sm text-muted-foreground mb-4">
-                  Drop FASTQ/FASTA files here (.fastq, .fasta, .gz)
-                </p>
-                <Button variant="outline">Browse Files</Button>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="sample_id">Sample ID *</Label>
+                    <Input
+                      id="sample_id"
+                      placeholder="e.g., EDNA-2024-001"
+                      value={uploadForm.sample_id}
+                      onChange={(e) => setUploadForm({...uploadForm, sample_id: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="location_name">Location Name *</Label>
+                    <Input
+                      id="location_name"
+                      placeholder="e.g., Arabian Sea - Station A12"
+                      value={uploadForm.location_name}
+                      onChange={(e) => setUploadForm({...uploadForm, location_name: e.target.value})}
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label htmlFor="latitude">Latitude *</Label>
+                      <Input
+                        id="latitude"
+                        type="number"
+                        step="any"
+                        placeholder="e.g., 22.5"
+                        value={uploadForm.latitude}
+                        onChange={(e) => setUploadForm({...uploadForm, latitude: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="longitude">Longitude *</Label>
+                      <Input
+                        id="longitude"
+                        type="number"
+                        step="any"
+                        placeholder="e.g., 91.8"
+                        value={uploadForm.longitude}
+                        onChange={(e) => setUploadForm({...uploadForm, longitude: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="collection_date">Collection Date *</Label>
+                    <Input
+                      id="collection_date"
+                      type="date"
+                      value={uploadForm.collection_date}
+                      onChange={(e) => setUploadForm({...uploadForm, collection_date: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="depth_meters">Depth (meters)</Label>
+                    <Input
+                      id="depth_meters"
+                      type="number"
+                      placeholder="e.g., 30"
+                      value={uploadForm.depth_meters}
+                      onChange={(e) => setUploadForm({...uploadForm, depth_meters: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="notes">Notes</Label>
+                    <Textarea
+                      id="notes"
+                      placeholder="Additional sample information..."
+                      value={uploadForm.notes}
+                      onChange={(e) => setUploadForm({...uploadForm, notes: e.target.value})}
+                    />
+                  </div>
+                </div>
               </div>
+
+              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+                <div className="text-center">
+                  <Dna className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {selectedFile ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        File selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                      </span>
+                    ) : (
+                      "Drop FASTQ/FASTA files here (.fastq, .fasta, .fq, .fa)"
+                    )}
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    <Button variant="outline" onClick={() => fileInputRef.current?.click()}>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Browse Files
+                    </Button>
+                    <Button 
+                      onClick={handleUpload} 
+                      disabled={!selectedFile || uploading}
+                      className="bg-ocean hover:bg-ocean/90"
+                    >
+                      {uploading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Upload className="w-4 h-4 mr-2" />
+                      )}
+                      {uploading ? "Uploading..." : "Upload Sample"}
+                    </Button>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    accept=".fasta,.fa,.fastq,.fq,.txt"
+                    onChange={handleFileSelect}
+                  />
+                </div>
+              </div>
+
+              {selectedFile && (
+                <div className="bg-muted/50 rounded-lg p-4">
+                  <h4 className="font-medium mb-2">File Information</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Name:</span>
+                      <p className="font-mono">{selectedFile.name}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Size:</span>
+                      <p>{(selectedFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Type:</span>
+                      <p>{selectedFile.type || 'text/plain'}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Modified:</span>
+                      <p>{new Date(selectedFile.lastModified).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

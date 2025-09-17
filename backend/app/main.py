@@ -1,7 +1,8 @@
-from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, UploadFile, File, WebSocket, WebSocketDisconnect, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import asyncio
+from typing import Optional
 from . import services, schemas
 
 app = FastAPI(title="Matsya Ocean Insights - Backend")
@@ -72,6 +73,96 @@ async def classify(file: UploadFile = File(...)):
         return JSONResponse(content=result)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/edna-samples")
+async def upload_edna_sample(
+    file: UploadFile = File(...),
+    sample_id: str = Form(...),
+    location_name: str = Form(...),
+    latitude: float = Form(...),
+    longitude: float = Form(...),
+    collection_date: str = Form(...),
+    depth_meters: Optional[float] = Form(None),
+    notes: Optional[str] = Form(None)
+):
+    """Upload and process eDNA sample files (FASTA/FASTQ)."""
+    try:
+        # Validate file type
+        allowed_extensions = ['fasta', 'fa', 'fastq', 'fq', 'txt']
+        file_extension = file.filename.lower().split('.')[-1] if file.filename else ''
+        
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid file type. Allowed: {', '.join(allowed_extensions)}"
+            )
+        
+        # Check file size (max 100MB)
+        max_size = 100 * 1024 * 1024  # 100MB
+        content = await file.read()
+        
+        if len(content) > max_size:
+            raise HTTPException(status_code=400, detail="File size exceeds 100MB limit")
+        
+        # Process file content
+        content_str = content.decode('utf-8')
+        file_analysis = services.process_edna_file(content_str, file.filename or 'unknown')
+        
+        # Create sample record with analysis results
+        sample_data = {
+            "id": sample_id,
+            "sample_id": sample_id,
+            "location_name": location_name,
+            "latitude": latitude,
+            "longitude": longitude,
+            "collection_date": collection_date,
+            "depth_meters": depth_meters,
+            "notes": notes,
+            "file_name": file.filename,
+            "file_size": len(content),
+            "file_type": file.content_type,
+            "status": "uploaded",
+            "processing_status": "completed",
+            **file_analysis  # Include sequence analysis results
+        }
+        
+        # Broadcast upload notification
+        asyncio.create_task(manager.broadcast({
+            "type": "edna_upload", 
+            "sample_id": sample_id,
+            "analysis": file_analysis
+        }))
+        
+        return JSONResponse(content=sample_data)
+        
+    except HTTPException:
+        raise
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File must be text-based (FASTA/FASTQ)")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload processing failed: {str(e)}")
+
+
+@app.get("/api/edna-samples")
+async def list_edna_samples():
+    """List uploaded eDNA samples."""
+    # This would normally query a database
+    # For now, return mock data
+    return [{
+        "id": "sample_001",
+        "sample_id": "sample_001",
+        "location_name": "Great Barrier Reef",
+        "latitude": -16.2839,
+        "longitude": 145.7781,
+        "collection_date": "2024-01-15",
+        "depth_meters": 10,
+        "status": "uploaded",
+        "sequence_count": 1247,
+        "avg_length": 150.5,
+        "file_format": "fastq",
+        "quality_score": 95.2
+    }]
 
 
 @app.websocket("/ws/updates")
