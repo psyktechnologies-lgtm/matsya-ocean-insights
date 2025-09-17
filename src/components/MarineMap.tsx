@@ -1,7 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, CircularProgress, Typography, IconButton, Drawer, List, ListItem, ListItemText, Chip, Button } from '@mui/material';
-import mapboxgl from 'mapbox-gl';
+import * as Cesium from 'cesium';
 import RoomIcon from '@mui/icons-material/Room';
 import LayersIcon from '@mui/icons-material/Layers';
 import { SpeciesOccurrence } from './SpeciesExplorer';
@@ -10,8 +10,8 @@ import { useWebSocket } from '@/hooks/useWebSocket';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Species } from '../types/database';
 
-// Mapbox access token (replace with your own for production)
-MapboxGL.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+// Cesium Ion access token
+Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1N2JjYWI1Ni0zMTk1LTQ5YWEtYTkyYy1mYjQzZjc0YjQwMGQiLCJpZCI6MzQxODgxLCJpYXQiOjE3NTgwNDMxODB9.I43fy6JSp5CAA3v1JRBFzNX_S-VdytgwqOT-j4chVEg';
 
 // Sample species data
 const sampleSpecies: SpeciesOccurrence[] = [
@@ -44,8 +44,8 @@ interface MarineMapProps {
 }
 
 const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<mapboxgl.Map | null>(null);
+  const cesiumContainer = useRef<HTMLDivElement>(null);
+  const viewerRef = useRef<Cesium.Viewer | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSpecies, setSelectedSpecies] = useState<SpeciesOccurrence | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -57,24 +57,47 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
   const { messages } = useWebSocket('/ws/updates');
 
   useEffect(() => {
-    // fetch species from backend when component mounts
+    const initializeCesium = async () => {
+      if (cesiumContainer.current && !viewerRef.current) {
+        // Initialize Cesium viewer
+        const terrainProvider = await Cesium.createWorldTerrainAsync();
+        viewerRef.current = new Cesium.Viewer(cesiumContainer.current, {
+          terrainProvider,
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          navigationHelpButton: false,
+          animation: false,
+          timeline: false,
+          fullscreenButton: false,
+          vrButton: false,
+          infoBox: true,
+          selectionIndicator: true,
+        });
+
+        // Set initial view to Bay of Bengal region
+        viewerRef.current.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(91.5, 22.2, 1000000), // Bay of Bengal
+          orientation: {
+            heading: Cesium.Math.toRadians(0),
+            pitch: Cesium.Math.toRadians(-45),
+            roll: 0.0,
+          },
+        });
+
+        setLoading(false);
+      }
+    };
+
+    initializeCesium();
+
+    // Fetch species data and add markers
     let mounted = true;
     (async () => {
       try {
         const resp = await fetchSpecies();
-        if (mounted) {
-          // replace markers by creating map after data arrives
-          if (mapContainer.current && !mapRef.current) {
-            mapRef.current = new mapboxgl.Map({
-              container: mapContainer.current,
-              style: 'mapbox://styles/mapbox/light-v10',
-              center: [91.5, 22.2],
-              zoom: 5,
-            });
-            mapRef.current.on('load', () => setLoading(false));
-          }
-          // add markers
-          const resp = await fetchSpecies();
+        if (mounted && viewerRef.current) {
           // Convert Species to SpeciesOccurrence format
           const data: SpeciesOccurrence[] = resp.map(s => ({
             id: s.id,
@@ -90,28 +113,71 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
             recordedDate: s.created_at,
             qualityGrade: 'research'
           }));
+
+          // Add species markers to the map
           data.forEach((species) => {
-            const el = document.createElement('div');
-            el.className = 'marker';
-            el.style.background = '#0077be';
-            el.style.width = '18px';
-            el.style.height = '18px';
-            el.style.borderRadius = '50%';
-            el.style.boxShadow = '0 0 6px rgba(0,0,0,0.2)';
-            el.addEventListener('click', () => setSelectedSpecies(species));
-            new mapboxgl.Marker(el)
-              .setLngLat([species.longitude, species.latitude])
-              .addTo(mapRef.current!);
+            const entity = viewerRef.current!.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(species.longitude, species.latitude),
+              billboard: {
+                image: 'data:image/svg+xml;base64,' + btoa(`
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="8" fill="#0077be" stroke="white" stroke-width="2"/>
+                    <circle cx="12" cy="12" r="4" fill="white"/>
+                  </svg>
+                `),
+                scale: 1.0,
+                verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+              },
+              label: {
+                text: species.commonName || species.scientificName,
+                font: '12pt monospace',
+                fillColor: Cesium.Color.WHITE,
+                outlineColor: Cesium.Color.BLACK,
+                outlineWidth: 2,
+                style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+                pixelOffset: new Cesium.Cartesian2(0, -50),
+                show: false, // Initially hidden
+              },
+              description: `
+                <div style="font-family: Arial; max-width: 300px;">
+                  <h3>${species.scientificName}</h3>
+                  <p><strong>Common Name:</strong> ${species.commonName || 'N/A'}</p>
+                  <p><strong>Family:</strong> ${species.family || 'N/A'}</p>
+                  <p><strong>Conservation Status:</strong> ${species.conservationStatus || 'N/A'}</p>
+                  <p><strong>Depth:</strong> ${species.depth ? `${species.depth} m` : 'N/A'}</p>
+                  <p><strong>Location:</strong> ${species.latitude.toFixed(4)}, ${species.longitude.toFixed(4)}</p>
+                  <p><strong>Data Source:</strong> ${species.dataSource}</p>
+                </div>
+              `,
+            });
+
+            // Store species data with entity for click handling
+            (entity as any).speciesData = species;
+          });
+
+          // Handle entity selection
+          viewerRef.current.selectedEntityChanged.addEventListener(() => {
+            const selectedEntity = viewerRef.current!.selectedEntity;
+            if (selectedEntity && (selectedEntity as any).speciesData) {
+              setSelectedSpecies((selectedEntity as any).speciesData);
+            }
           });
         }
       } catch (e) {
         console.warn('Failed to fetch species for map', e);
       }
     })();
-    return () => { mounted = false; };
-  }, [speciesData]);
 
-  // react to websocket messages
+    return () => { 
+      mounted = false;
+      if (viewerRef.current) {
+        viewerRef.current.destroy();
+        viewerRef.current = null;
+      }
+    };
+  }, []);
+
+  // React to websocket messages
   useEffect(() => {
     const latestMsg = messages[messages.length - 1];
     if (latestMsg && (latestMsg.type === 'obis_sync' || latestMsg.type === 'classification')) {
@@ -119,10 +185,28 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
     }
   }, [messages, queryClient]);
 
-  // Layer controls (mock)
+  // Layer controls
   const handleLayerChange = (newLayer: typeof layer) => {
     setLayer(newLayer);
-    // TODO: Add/remove layers (heatmap, temperature, depth) using MapboxGL API
+    if (viewerRef.current) {
+      switch (newLayer) {
+        case 'species':
+          // Show species markers
+          viewerRef.current.entities.values.forEach(entity => {
+            if (entity.billboard) entity.show = true;
+          });
+          break;
+        case 'heatmap':
+          // TODO: Add heatmap layer
+          break;
+        case 'temperature':
+          // TODO: Add temperature layer
+          break;
+        case 'depth':
+          // TODO: Add depth layer
+          break;
+      }
+    }
   };
 
   return (
@@ -132,7 +216,7 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
           <CircularProgress />
         </Box>
       )}
-      <Box ref={mapContainer} sx={{ height: '100%', width: '100%' }} />
+      <Box ref={cesiumContainer} sx={{ height: '100%', width: '100%' }} />
       {/* Layer Controls */}
       <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 2, p: 1, boxShadow: 2 }}>
         <Typography variant="subtitle2" sx={{ mb: 1 }}>Layers</Typography>
