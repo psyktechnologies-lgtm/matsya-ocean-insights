@@ -184,7 +184,7 @@ export const obisSync = async (): Promise<{ message: string; count: number }> =>
               species_name: result.specificEpithet,
               latitude: result.decimalLatitude,
               longitude: result.decimalLongitude,
-              habitat: `Depth: ${result.depth}m` || 'Marine environment',
+              habitat: result.depth ? `Depth: ${result.depth}m` : 'Marine environment',
               description: `Data from OBIS - ${result.basisOfRecord}`
             });
             
