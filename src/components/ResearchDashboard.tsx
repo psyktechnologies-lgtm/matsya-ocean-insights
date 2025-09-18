@@ -207,14 +207,14 @@ const ResearchDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Research Categories with Ocean Theme */}
+        {/* Research Categories with Enhanced Ocean Theme Visibility */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {researchCategories.map((category) => (
             <Card 
               key={category.id} 
               className={`group hover:shadow-2xl transition-all duration-500 cursor-pointer border-2 hover:scale-105 ${
                 theme === 'ocean' 
-                  ? 'hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/25 hover:bg-white/35 border-white/20' 
+                  ? 'hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/40 hover:bg-white/50 border-white/30 shadow-lg hover:shadow-cyan-500/25' 
                   : 'hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
               } ${category.bgPattern}`}
               onClick={() => handleCategorySelect(category.path)}
@@ -233,21 +233,21 @@ const ResearchDashboard: React.FC = () => {
                     </Badge>
                     <ChevronRight className={`h-6 w-6 transition-all duration-300 group-hover:translate-x-1 ${
                       theme === 'ocean' 
-                        ? 'text-cyan-400 group-hover:text-cyan-300' 
+                        ? 'text-white group-hover:text-cyan-200 drop-shadow-lg' 
                         : 'text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400'
                     }`} />
                   </div>
                 </div>
                 <CardTitle className={`text-2xl font-semibold transition-colors duration-300 ${
                   theme === 'ocean' 
-                    ? 'text-white group-hover:text-cyan-300' 
+                    ? 'text-white group-hover:text-cyan-200 drop-shadow-lg' 
                     : 'text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
                 }`}>
                   {category.title}
                 </CardTitle>
                 <CardDescription className={`text-base leading-relaxed ${
                   theme === 'ocean' 
-                    ? 'text-cyan-100' 
+                    ? 'text-cyan-50 drop-shadow-md' 
                     : 'text-gray-600 dark:text-gray-300'
                 }`}>
                   {category.description}
@@ -257,14 +257,14 @@ const ResearchDashboard: React.FC = () => {
                 <div className="space-y-3">
                   <h4 className={`font-medium ${
                     theme === 'ocean' 
-                      ? 'text-cyan-200' 
+                      ? 'text-cyan-100 drop-shadow-md' 
                       : 'text-gray-700 dark:text-gray-300'
                   }`}>Key Features:</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {category.features.map((feature, index) => (
                       <div key={index} className={`flex items-center transition-colors duration-300 ${
                         theme === 'ocean' 
-                          ? 'text-blue-100 group-hover:text-white' 
+                          ? 'text-white group-hover:text-cyan-100 drop-shadow-sm' 
                           : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
                       }`}>
                         <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mr-3 animate-pulse"></div>
