@@ -129,38 +129,37 @@ const ResearchDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Conditional Background Based on Theme */}
-      {theme === 'ocean' ? (
+    <div className={`min-h-screen relative ${
+      theme === 'ocean' 
+        ? 'bg-gradient-to-br from-blue-900 via-blue-800 to-teal-900' 
+        : 'bg-gray-50 dark:bg-gray-900'
+    }`}>
+      {/* Ocean Theme Overlay Effects */}
+      {theme === 'ocean' && (
         <>
-          {/* Animated Ocean Background */}
-          <div className="fixed inset-0 z-0">
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900 via-blue-800 to-teal-900"></div>
-            <div className="absolute inset-0 opacity-20">
-              <div className="wave-animation absolute inset-0"></div>
-            </div>
-            {/* Floating marine elements */}
-            <div className="absolute top-20 left-10 opacity-30 animate-pulse">
-              <Anchor className="h-12 w-12 text-blue-300" />
-            </div>
-            <div className="absolute top-40 right-20 opacity-20 animate-bounce">
-              <Shell className="h-8 w-8 text-cyan-300" />
-            </div>
-            <div className="absolute bottom-20 left-1/4 opacity-25 animate-pulse">
-              <Fish className="h-10 w-10 text-teal-300" />
-            </div>
-            <div className="absolute top-60 right-1/4 opacity-30 animate-pulse">
-              <Waves className="h-14 w-14 text-blue-300" />
-            </div>
+          {/* Wave Animation Overlay */}
+          <div className="absolute inset-0 opacity-20 pointer-events-none">
+            <div className="wave-animation absolute inset-0"></div>
+          </div>
+          {/* Floating marine elements */}
+          <div className="absolute top-20 left-10 opacity-30 animate-pulse pointer-events-none">
+            <Anchor className="h-12 w-12 text-blue-300" />
+          </div>
+          <div className="absolute top-40 right-20 opacity-20 animate-bounce pointer-events-none">
+            <Shell className="h-8 w-8 text-cyan-300" />
+          </div>
+          <div className="absolute bottom-20 left-1/4 opacity-25 animate-pulse pointer-events-none">
+            <Fish className="h-10 w-10 text-teal-300" />
+          </div>
+          <div className="absolute top-60 right-1/4 opacity-30 animate-pulse pointer-events-none">
+            <Waves className="h-14 w-14 text-blue-300" />
           </div>
         </>
-      ) : (
-        /* Standard Light/Dark Background */
-        <div className="fixed inset-0 z-0 bg-gray-50 dark:bg-gray-900"></div>
       )}
 
       {/* Content */}
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Header with Theme Awareness */}
         {/* Header with Theme Awareness */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-6">
@@ -209,7 +208,11 @@ const ResearchDashboard: React.FC = () => {
           {researchCategories.map((category) => (
             <Card 
               key={category.id} 
-              className={`group hover:shadow-2xl transition-all duration-500 cursor-pointer border-2 hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/10 dark:bg-gray-900/20 hover:bg-white/20 hover:scale-105 ${category.bgPattern}`}
+              className={`group hover:shadow-2xl transition-all duration-500 cursor-pointer border-2 hover:scale-105 ${
+                theme === 'ocean' 
+                  ? 'hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/10 dark:bg-gray-900/20 hover:bg-white/20' 
+                  : 'hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
+              } ${category.bgPattern}`}
               onClick={() => handleCategorySelect(category.path)}
             >
               <CardHeader className="pb-4">
@@ -224,22 +227,42 @@ const ResearchDashboard: React.FC = () => {
                     >
                       {category.status}
                     </Badge>
-                    <ChevronRight className="h-6 w-6 text-cyan-400 group-hover:text-cyan-300 group-hover:translate-x-1 transition-all duration-300" />
+                    <ChevronRight className={`h-6 w-6 transition-all duration-300 group-hover:translate-x-1 ${
+                      theme === 'ocean' 
+                        ? 'text-cyan-400 group-hover:text-cyan-300' 
+                        : 'text-gray-400 dark:text-gray-500 group-hover:text-blue-500 dark:group-hover:text-blue-400'
+                    }`} />
                   </div>
                 </div>
-                <CardTitle className="text-2xl font-semibold text-white group-hover:text-cyan-300 transition-colors duration-300">
+                <CardTitle className={`text-2xl font-semibold transition-colors duration-300 ${
+                  theme === 'ocean' 
+                    ? 'text-white group-hover:text-cyan-300' 
+                    : 'text-gray-900 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                }`}>
                   {category.title}
                 </CardTitle>
-                <CardDescription className="text-cyan-100 text-base leading-relaxed">
+                <CardDescription className={`text-base leading-relaxed ${
+                  theme === 'ocean' 
+                    ? 'text-cyan-100' 
+                    : 'text-gray-600 dark:text-gray-300'
+                }`}>
                   {category.description}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <h4 className="font-medium text-cyan-200">Key Features:</h4>
+                  <h4 className={`font-medium ${
+                    theme === 'ocean' 
+                      ? 'text-cyan-200' 
+                      : 'text-gray-700 dark:text-gray-300'
+                  }`}>Key Features:</h4>
                   <div className="grid grid-cols-2 gap-3">
                     {category.features.map((feature, index) => (
-                      <div key={index} className="flex items-center text-blue-100 group-hover:text-white transition-colors duration-300">
+                      <div key={index} className={`flex items-center transition-colors duration-300 ${
+                        theme === 'ocean' 
+                          ? 'text-blue-100 group-hover:text-white' 
+                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-800 dark:group-hover:text-gray-200'
+                      }`}>
                         <div className="w-2 h-2 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full mr-3 animate-pulse"></div>
                         <span className="text-sm">{feature}</span>
                       </div>
