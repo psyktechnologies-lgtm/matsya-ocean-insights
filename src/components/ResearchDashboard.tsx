@@ -210,7 +210,7 @@ const ResearchDashboard: React.FC = () => {
               key={category.id} 
               className={`group hover:shadow-2xl transition-all duration-500 cursor-pointer border-2 hover:scale-105 ${
                 theme === 'ocean' 
-                  ? 'hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/10 dark:bg-gray-900/20 hover:bg-white/20' 
+                  ? 'hover:border-cyan-400 dark:hover:border-cyan-500 backdrop-blur-sm bg-white/25 hover:bg-white/35 border-white/20' 
                   : 'hover:border-blue-400 dark:hover:border-blue-500 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700'
               } ${category.bgPattern}`}
               onClick={() => handleCategorySelect(category.path)}
@@ -277,7 +277,7 @@ const ResearchDashboard: React.FC = () => {
         {/* Quick Actions with Ocean Animation */}
         <Card className={`mb-8 backdrop-blur-sm ${
           theme === 'ocean' 
-            ? 'bg-white/10 dark:bg-gray-900/20 border-cyan-400/30' 
+            ? 'bg-white/25 border-white/20' 
             : 'bg-white/90 dark:bg-gray-800/90 border-gray-200 dark:border-gray-700'
         } shadow-2xl`}>
           <CardHeader>
@@ -314,7 +314,7 @@ const ResearchDashboard: React.FC = () => {
                   variant="outline"
                   className={`h-auto p-6 flex flex-col items-start space-y-3 hover:shadow-lg transition-all duration-300 hover:scale-105 ${
                     theme === 'ocean'
-                      ? 'bg-white/5 hover:bg-white/15 border-cyan-400/30 hover:border-cyan-400 text-white hover:text-cyan-100'
+                      ? 'bg-white/20 hover:bg-white/30 border-white/20 hover:border-cyan-400 text-white hover:text-cyan-100'
                       : 'bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500 text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400'
                   }`}
                   onClick={() => navigate(action.path)}
@@ -343,7 +343,7 @@ const ResearchDashboard: React.FC = () => {
         {/* Getting Started with Ocean Theme */}
         <Card className={`backdrop-blur-sm shadow-2xl ${
           theme === 'ocean' 
-            ? 'bg-white/10 dark:bg-gray-900/20 border-cyan-400/30' 
+            ? 'bg-white/25 border-white/20' 
             : 'bg-white/90 dark:bg-gray-800/90 border-gray-200 dark:border-gray-700'
         }`}>
           <CardHeader>
@@ -364,7 +364,7 @@ const ResearchDashboard: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className={`space-y-3 p-6 rounded-lg border transition-all duration-300 ${
                 theme === 'ocean'
-                  ? 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border-cyan-400/30'
+                  ? 'bg-gradient-to-br from-blue-500/30 to-cyan-500/30 border-cyan-400/40'
                   : 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/30 dark:to-cyan-900/30 border-blue-200 dark:border-blue-700'
               }`}>
                 <h4 className={`font-semibold text-xl ${
@@ -393,7 +393,7 @@ const ResearchDashboard: React.FC = () => {
               </div>
               <div className={`space-y-3 p-6 rounded-lg border transition-all duration-300 ${
                 theme === 'ocean'
-                  ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border-green-400/30'
+                  ? 'bg-gradient-to-br from-green-500/30 to-emerald-500/30 border-green-400/40'
                   : 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 border-green-200 dark:border-green-700'
               }`}>
                 <h4 className={`font-semibold text-xl ${
@@ -422,7 +422,7 @@ const ResearchDashboard: React.FC = () => {
               </div>
               <div className={`space-y-3 p-6 rounded-lg border transition-all duration-300 ${
                 theme === 'ocean'
-                  ? 'bg-gradient-to-br from-purple-500/20 to-indigo-500/20 border-purple-400/30'
+                  ? 'bg-gradient-to-br from-purple-500/30 to-indigo-500/30 border-purple-400/40'
                   : 'bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/30 dark:to-indigo-900/30 border-purple-200 dark:border-purple-700'
               }`}>
                 <h4 className={`font-semibold text-xl ${
