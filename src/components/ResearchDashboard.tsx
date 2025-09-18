@@ -37,7 +37,7 @@ const ResearchDashboard: React.FC = () => {
       description: 'Upload and analyze taxonomic datasets, species classification, and biodiversity studies',
       icon: <Database className="h-8 w-8" />,
       color: 'bg-gradient-to-br from-blue-500 to-cyan-500',
-      path: '/taxonomy',
+      path: '/dashboard/taxonomy',
       features: ['Darwin Core Support', 'Species Classification', 'Biodiversity Analysis', 'Data Validation'],
       status: 'Active',
       bgPattern: 'bg-blue-50 dark:bg-blue-950/20 ocean:bg-blue-900/30',
@@ -50,7 +50,7 @@ const ResearchDashboard: React.FC = () => {
       description: 'Fish age determination and growth analysis through otolith structure examination',
       icon: <Fish className="h-8 w-8" />,
       color: 'bg-gradient-to-br from-green-500 to-emerald-500',
-      path: '/otolith',
+      path: '/dashboard/otolith',
       features: ['Age Determination', 'Growth Analysis', 'Image Processing', 'Statistical Models'],
       status: 'Active',
       bgPattern: 'bg-green-50 dark:bg-green-950/20 ocean:bg-green-900/30',
@@ -63,7 +63,7 @@ const ResearchDashboard: React.FC = () => {
       description: 'Environmental DNA sequencing, metabarcoding, and species detection from water samples',
       icon: <Dna className="h-8 w-8" />,
       color: 'bg-gradient-to-br from-purple-500 to-indigo-500',
-      path: '/edna',
+      path: '/dashboard/edna',
       features: ['Sequence Analysis', 'Metabarcoding', 'Species Detection', 'Quality Control'],
       status: 'Active',
       bgPattern: 'bg-purple-50 dark:bg-purple-950/20 ocean:bg-purple-900/30',
@@ -76,7 +76,7 @@ const ResearchDashboard: React.FC = () => {
       description: 'Submit, collaborate, and publish marine research papers with peer review system',
       icon: <FileText className="h-8 w-8" />,
       color: 'bg-gradient-to-br from-orange-500 to-red-500',
-      path: '/research-publishing',
+      path: '/dashboard/research-publishing',
       features: ['Manuscript Submission', 'Peer Review', 'Collaboration Tools', 'Publication Management'],
       status: 'New',
       bgPattern: 'bg-orange-50 dark:bg-orange-950/20 ocean:bg-orange-900/30',
@@ -90,7 +90,7 @@ const ResearchDashboard: React.FC = () => {
       title: '3D Marine Map',
       description: 'Explore real-time marine data on interactive 3D globe',
       icon: <Globe className="h-6 w-6" />,
-      path: '/marine-map',
+      path: '/dashboard/marine-map',
       color: 'text-blue-600 dark:text-blue-400 ocean:text-cyan-300',
       accent: 'bg-blue-100 dark:bg-blue-900/30 ocean:bg-cyan-500/20',
       border: 'border-blue-200 dark:border-blue-800 ocean:border-cyan-400/30'
@@ -99,7 +99,7 @@ const ResearchDashboard: React.FC = () => {
       title: 'Real-time Analytics',
       description: 'View live marine data streams and analytics',
       icon: <Activity className="h-6 w-6" />,
-      path: '/analytics',
+      path: '/dashboard/analytics',
       color: 'text-green-600 dark:text-green-400 ocean:text-emerald-300',
       accent: 'bg-green-100 dark:bg-green-900/30 ocean:bg-emerald-500/20',
       border: 'border-green-200 dark:border-green-800 ocean:border-emerald-400/30'
@@ -108,7 +108,7 @@ const ResearchDashboard: React.FC = () => {
       title: 'Species Explorer',
       description: 'Browse and search marine species database',
       icon: <Eye className="h-6 w-6" />,
-      path: '/species',
+      path: '/dashboard/species',
       color: 'text-purple-600 dark:text-purple-400 ocean:text-indigo-300',
       accent: 'bg-purple-100 dark:bg-purple-900/30 ocean:bg-indigo-500/20',
       border: 'border-purple-200 dark:border-purple-800 ocean:border-indigo-400/30'
@@ -117,7 +117,7 @@ const ResearchDashboard: React.FC = () => {
       title: 'Community Hub',
       description: 'Connect with marine researchers worldwide',
       icon: <Users className="h-6 w-6" />,
-      path: '/community',
+      path: '/dashboard/community',
       color: 'text-orange-600 dark:text-orange-400 ocean:text-amber-300',
       accent: 'bg-orange-100 dark:bg-orange-900/30 ocean:bg-amber-500/20',
       border: 'border-orange-200 dark:border-orange-800 ocean:border-amber-400/30'
@@ -356,11 +356,15 @@ const ResearchDashboard: React.FC = () => {
                 }`}>
                   Start with our guided tutorials and sample datasets to learn the platform.
                 </p>
-                <Button variant="link" className={`p-0 h-auto font-medium ${
-                  theme === 'ocean' 
-                    ? 'text-cyan-300 hover:text-cyan-200' 
-                    : 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
-                }`}>
+                <Button 
+                  variant="link" 
+                  className={`p-0 h-auto font-medium ${
+                    theme === 'ocean' 
+                      ? 'text-cyan-300 hover:text-cyan-200' 
+                      : 'text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300'
+                  }`}
+                  onClick={() => navigate('/dashboard/education')}
+                >
                   View Tutorials →
                 </Button>
               </div>
@@ -381,11 +385,15 @@ const ResearchDashboard: React.FC = () => {
                 }`}>
                   Access documentation, API references, and community support.
                 </p>
-                <Button variant="link" className={`p-0 h-auto font-medium ${
-                  theme === 'ocean' 
-                    ? 'text-green-300 hover:text-green-200' 
-                    : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'
-                }`}>
+                <Button 
+                  variant="link" 
+                  className={`p-0 h-auto font-medium ${
+                    theme === 'ocean' 
+                      ? 'text-green-300 hover:text-green-200' 
+                      : 'text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300'
+                  }`}
+                  onClick={() => navigate('/dashboard/api-docs')}
+                >
                   Get Support →
                 </Button>
               </div>
@@ -406,11 +414,15 @@ const ResearchDashboard: React.FC = () => {
                 }`}>
                   Publish findings and collaborate with the global marine research community.
                 </p>
-                <Button variant="link" className={`p-0 h-auto font-medium ${
-                  theme === 'ocean' 
-                    ? 'text-purple-300 hover:text-purple-200' 
-                    : 'text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300'
-                }`}>
+                <Button 
+                  variant="link" 
+                  className={`p-0 h-auto font-medium ${
+                    theme === 'ocean' 
+                      ? 'text-purple-300 hover:text-purple-200' 
+                      : 'text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300'
+                  }`}
+                  onClick={() => navigate('/dashboard/research-publishing')}
+                >
                   Learn More →
                 </Button>
               </div>
