@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { BarChart3, TrendingUp, TrendingDown, Fish, Waves, Thermometer, RefreshCw, Activity } from "lucide-react";
 import { fetchSpecies, obisSync, fetchOBISData } from "@/lib/api";
 import { useWebSocket } from "@/hooks/useWebSocket";
+import { useTheme } from "@/contexts/ThemeContext";
 import type { Species } from "@/types/database";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
@@ -38,6 +39,16 @@ interface TemperatureDataPoint {
 }
 
 const AnalyticsPage = () => {
+  const { theme } = useTheme();
+  
+  // Theme-aware colors for charts
+  const chartColors = {
+    grid: theme === 'dark' ? '#374151' : '#e2e8f0',
+    axis: theme === 'dark' ? '#9ca3af' : '#64748b',
+    line: theme === 'dark' ? '#60a5fa' : '#3b82f6',
+    text: theme === 'dark' ? '#e5e7eb' : '#374151'
+  };
+  
   const [realTimeData, setRealTimeData] = useState<RealTimeStats>({
     oceanTemperature: 15.2,
     speciesCount: 245120,
@@ -171,9 +182,15 @@ const AnalyticsPage = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg">
+        <div className={`p-3 border rounded-lg shadow-lg ${
+          theme === 'dark' 
+            ? 'bg-gray-800 border-gray-600 text-white' 
+            : 'bg-white border-gray-200 text-gray-900'
+        }`}>
           <p className="text-sm font-medium">{`Time: ${label}`}</p>
-          <p className="text-sm text-blue-600">
+          <p className={`text-sm ${
+            theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+          }`}>
             {`Temperature: ${payload[0].value}°C`}
           </p>
         </div>
@@ -274,7 +291,7 @@ const AnalyticsPage = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-primary flex items-center space-x-2">
-            <BarChart3 className="h-8 w-8 text-ocean" />
+            <BarChart3 className="h-8 w-8 text-blue-600" />
             <span>Marine Analytics</span>
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -448,27 +465,27 @@ const AnalyticsPage = () => {
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={temperatureHistory}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke={chartColors.grid} />
                   <XAxis 
                     dataKey="time" 
-                    stroke="#64748b"
+                    stroke={chartColors.axis}
                     fontSize={12}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: chartColors.text }}
                   />
                   <YAxis 
-                    stroke="#64748b"
+                    stroke={chartColors.axis}
                     fontSize={12}
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: chartColors.text }}
                     domain={['dataMin - 2', 'dataMax + 2']}
                   />
                   <Tooltip content={<CustomTooltip />} />
                   <Line 
                     type="monotone" 
                     dataKey="temperature" 
-                    stroke="#3b82f6" 
+                    stroke={chartColors.line} 
                     strokeWidth={2}
-                    dot={{ fill: '#3b82f6', strokeWidth: 2, r: 3 }}
-                    activeDot={{ r: 5, stroke: '#3b82f6', strokeWidth: 2 }}
+                    dot={{ fill: chartColors.line, strokeWidth: 2, r: 3 }}
+                    activeDot={{ r: 5, stroke: chartColors.line, strokeWidth: 2 }}
                     animationDuration={300}
                   />
                 </LineChart>

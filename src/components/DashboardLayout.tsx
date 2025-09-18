@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
+import { Outlet, useNavigate, NavLink, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -173,10 +173,10 @@ const DashboardLayout = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SidebarTrigger />
-                <div className="flex items-center space-x-2">
+                <Link to="/dashboard" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
                   <Waves className="h-6 w-6 text-ocean" />
                   <h1 className="text-xl font-bold text-primary">MATSYA</h1>
-                </div>
+                </Link>
               </div>
               
               <div className="flex items-center space-x-4">

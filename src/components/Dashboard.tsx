@@ -74,7 +74,7 @@ const Dashboard = () => {
       description: "Access latest research papers and marine science publications",
       icon: Database,
       link: "/dashboard/research",
-      color: "text-ocean"
+      color: "text-blue-600"
     },
     {
       title: "Community Hub",
@@ -91,7 +91,7 @@ const Dashboard = () => {
       description: "Live marine data streams and interactive maps",
       icon: TrendingUp,
       link: "/dashboard/realtime",
-      color: "text-ocean"
+      color: "text-blue-600"
     },
     {
       title: "Premium Analytics",
@@ -122,9 +122,9 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <Waves className="h-8 w-8 text-ocean" />
+          <Waves className="h-8 w-8 text-blue-600" />
           {profile && (
-            <Badge variant={isAdvancedUser ? "default" : "secondary"} className="text-xs bg-gradient-ocean text-white">
+            <Badge variant={isAdvancedUser ? "default" : "secondary"} className="text-xs bg-blue-600 text-white">
               {profile.userType === "researchers" ? "Researcher" : 
                profile.userType === "marine_business" ? "Marine Business" : "Student"}
             </Badge>
@@ -135,16 +135,18 @@ const Dashboard = () => {
       {/* Quick Access Actions */}
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Link to="/dashboard/chatbot">
-          <Button className="h-24 bg-gradient-ocean flex flex-col items-center justify-center space-y-2 w-full">
+          <Button className="h-24 bg-blue-600 flex flex-col items-center justify-center space-y-2 w-full">
             <MessageCircle className="h-6 w-6" />
             <span>AI Marine Assistant</span>
           </Button>
         </Link>
-        <Button className="h-24 bg-gradient-wave flex flex-col items-center justify-center space-y-2">
-          <Globe className="h-6 w-6" />
-          <span>3D Ocean Map</span>
-        </Button>
-        <Link to="/dashboard/research-hub">
+        <Link to="/dashboard/marine-map">
+          <Button className="h-24 bg-gradient-wave flex flex-col items-center justify-center space-y-2 w-full">
+            <Globe className="h-6 w-6" />
+            <span>3D Ocean Map</span>
+          </Button>
+        </Link>
+        <Link to="/dashboard/research-hub">"
           <Button className="h-24 bg-gradient-coral flex flex-col items-center justify-center space-y-2 w-full">
             <BookOpen className="h-6 w-6" />
             <span>Research Hub</span>
@@ -163,7 +165,7 @@ const Dashboard = () => {
               <CardTitle className="text-sm font-medium text-muted-foreground">
                 {stat.label}
               </CardTitle>
-              <stat.icon className="h-4 w-4 text-ocean" />
+              <stat.icon className="h-4 w-4 text-blue-600" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{stat.value}</div>
@@ -225,7 +227,7 @@ const Dashboard = () => {
       <Card className="bg-gradient-subtle">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Waves className="h-5 w-5 text-ocean" />
+            <Waves className="h-5 w-5 text-blue-600" />
             <span>Quick Actions</span>
           </CardTitle>
           <CardDescription>
@@ -264,7 +266,7 @@ const Dashboard = () => {
 
       {/* User Type Upgrade Banner for Normal Users */}
       {!isAdvancedUser && (
-        <Card className="bg-gradient-ocean text-white">
+        <Card className="bg-blue-600 text-white">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
               <Crown className="h-5 w-5" />
@@ -279,28 +281,12 @@ const Dashboard = () => {
               <div className="space-y-1">
                 <p className="text-sm opacity-90">Become a verified researcher or policy maker</p>
                 <div className="flex space-x-2">
-                  <Badge variant="secondary" className={
-                    theme === 'ocean' 
-                      ? 'bg-white/40 text-white border-white/20' 
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                  }>Real-time Data</Badge>
-                  <Badge variant="secondary" className={
-                    theme === 'ocean' 
-                      ? 'bg-white/40 text-white border-white/20' 
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                  }>Advanced Analytics</Badge>
-                  <Badge variant="secondary" className={
-                    theme === 'ocean' 
-                      ? 'bg-white/40 text-white border-white/20' 
-                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                  }>Research Tools</Badge>
+                  <Badge variant="secondary" className="bg-white/40 text-white border-white/20">Real-time Data</Badge>
+                  <Badge variant="secondary" className="bg-white/40 text-white border-white/20">Advanced Analytics</Badge>
+                  <Badge variant="secondary" className="bg-white/40 text-white border-white/20">Research Tools</Badge>
                 </div>
               </div>
-              <Button variant="secondary" className={
-                theme === 'ocean' 
-                  ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
-                  : 'bg-white text-primary hover:bg-white/90'
-              }>
+              <Button variant="secondary" className="bg-white/40 text-gray-900 hover:bg-white/50 border-white/20">
                 Learn More
               </Button>
             </div>

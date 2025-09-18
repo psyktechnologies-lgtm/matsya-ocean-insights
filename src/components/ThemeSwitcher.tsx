@@ -1,4 +1,4 @@
-import { Sun, Moon, Waves } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/contexts/ThemeContext';
 import { cn } from '@/lib/utils';
@@ -18,12 +18,6 @@ const ThemeSwitcher = () => {
       icon: Moon,
       label: 'Dark', 
       description: 'Easy on the eyes'
-    },
-    {
-      name: 'ocean',
-      icon: Waves,
-      label: 'Ocean',
-      description: 'Deep sea vibes'
     }
   ] as const;
 
@@ -41,7 +35,6 @@ const ThemeSwitcher = () => {
             onClick={() => setTheme(themeOption.name)}
             className={cn(
               'flex items-center space-x-2 transition-all duration-200',
-              isActive && themeOption.name === 'ocean' && 'bg-gradient-ocean text-white',
               isActive && themeOption.name === 'light' && 'bg-background text-foreground',
               isActive && themeOption.name === 'dark' && 'bg-foreground text-background'
             )}
