@@ -137,21 +137,25 @@ const ResearchDashboard: React.FC = () => {
       {/* Ocean Theme Overlay Effects */}
       {theme === 'ocean' && (
         <>
-          {/* Wave Animation Overlay */}
-          <div className="absolute inset-0 opacity-20 pointer-events-none">
+          {/* Heavily Blurred Ocean Background */}
+          <div className="fixed inset-0 ocean-background-blur pointer-events-none z-0"></div>
+          
+          {/* Subtle Wave Animation Overlay */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none z-0">
             <div className="wave-animation absolute inset-0"></div>
           </div>
-          {/* Floating marine elements */}
-          <div className="absolute top-20 left-10 opacity-30 animate-pulse pointer-events-none">
+          
+          {/* Floating marine elements - subtle and non-intrusive */}
+          <div className="absolute top-20 left-10 opacity-20 animate-pulse pointer-events-none z-0">
             <Anchor className="h-12 w-12 text-blue-300" />
           </div>
-          <div className="absolute top-40 right-20 opacity-20 animate-bounce pointer-events-none">
+          <div className="absolute top-40 right-20 opacity-15 animate-bounce pointer-events-none z-0">
             <Shell className="h-8 w-8 text-cyan-300" />
           </div>
-          <div className="absolute bottom-20 left-1/4 opacity-25 animate-pulse pointer-events-none">
+          <div className="absolute bottom-20 left-1/4 opacity-15 animate-pulse pointer-events-none z-0">
             <Fish className="h-10 w-10 text-teal-300" />
           </div>
-          <div className="absolute top-60 right-1/4 opacity-30 animate-pulse pointer-events-none">
+          <div className="absolute top-60 right-1/4 opacity-20 animate-pulse pointer-events-none z-0">
             <Waves className="h-14 w-14 text-blue-300" />
           </div>
         </>

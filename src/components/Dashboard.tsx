@@ -144,7 +144,7 @@ const Dashboard = () => {
           <Globe className="h-6 w-6" />
           <span>3D Ocean Map</span>
         </Button>
-        <Link to="/dashboard/research">
+        <Link to="/dashboard/research-hub">
           <Button className="h-24 bg-gradient-coral flex flex-col items-center justify-center space-y-2 w-full">
             <BookOpen className="h-6 w-6" />
             <span>Research Hub</span>
