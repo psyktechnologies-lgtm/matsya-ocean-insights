@@ -32,18 +32,18 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-subtle">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-900 dark:to-blue-900">
       {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Waves className="h-8 w-8 text-ocean" />
+          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <Waves className="h-8 w-8 text-blue-600 dark:text-blue-400" />
             <h1 className="text-2xl font-bold text-primary">MATSYA</h1>
-          </div>
+          </Link>
           <div className="flex items-center space-x-4">
             <ThemeSwitcher />
             <Link to="/auth">
-              <Button variant="outline" className="border-ocean text-ocean hover:bg-ocean hover:text-ocean-foreground">
+              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-400 dark:hover:text-gray-900">
                 Get Started
               </Button>
             </Link>
@@ -63,17 +63,17 @@ const LandingPage = () => {
               height: '400px'
             }}
           >
-            <div className="absolute inset-0 bg-gradient-ocean/70 flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/70 to-cyan-600/70 dark:from-blue-900/70 dark:to-gray-900/70 flex items-center justify-center">
               <div className="text-center text-white">
                 <h1 className="text-5xl md:text-6xl font-bold mb-6">
                   Dive Deep into
-                  <span className="block text-primary-glow">Marine Insights</span>
+                  <span className="block text-cyan-300 dark:text-blue-300">Marine Insights</span>
                 </h1>
                 <p className="text-xl md:text-2xl mb-8 max-w-2xl mx-auto opacity-90">
                   Advanced marine data analysis platform for researchers, policymakers, and ocean enthusiasts
                 </p>
                 <Link to="/auth">
-                  <Button size="lg" className="bg-gradient-coral hover:opacity-90 text-white font-semibold px-8 py-4 text-lg shadow-wave">
+                  <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 text-white font-semibold px-8 py-4 text-lg shadow-lg">
                     Explore the Ocean
                   </Button>
                 </Link>
@@ -91,9 +91,9 @@ const LandingPage = () => {
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-wave transition-all duration-300 hover:-translate-y-1">
+              <Card key={index} className="text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
                 <CardContent className="p-6">
-                  <feature.icon className="h-12 w-12 mx-auto mb-4 text-ocean" />
+                  <feature.icon className="h-12 w-12 mx-auto mb-4 text-blue-600 dark:text-blue-400" />
                   <h3 className="text-xl font-semibold mb-3 text-primary">{feature.title}</h3>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
@@ -104,18 +104,14 @@ const LandingPage = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-ocean">
+      <section className="py-20 px-4 bg-gradient-to-br from-blue-600 to-cyan-600 dark:from-blue-800 dark:to-gray-800">
         <div className="container mx-auto text-center text-white">
           <h2 className="text-4xl font-bold mb-6">Ready to Explore?</h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
             Join researchers and policymakers using MATSYA for cutting-edge marine data analysis
           </p>
           <Link to="/auth">
-            <Button size="lg" className={`font-semibold px-8 py-4 ${
-              theme === 'ocean' 
-                ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
-                : 'bg-white text-primary hover:bg-white/90'
-            }`}>
+            <Button size="lg" className="bg-white text-blue-600 hover:bg-white/90 font-semibold px-8 py-4 dark:bg-gray-100 dark:text-blue-700 dark:hover:bg-white">
               Start Your Journey
             </Button>
           </Link>

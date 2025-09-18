@@ -135,19 +135,19 @@ const Dashboard = () => {
       {/* Quick Access Actions */}
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <Link to="/dashboard/chatbot">
-          <Button className="h-24 bg-blue-600 flex flex-col items-center justify-center space-y-2 w-full">
+          <Button className="h-24 bg-blue-600 hover:bg-blue-700 flex flex-col items-center justify-center space-y-2 w-full text-white">
             <MessageCircle className="h-6 w-6" />
             <span>AI Marine Assistant</span>
           </Button>
         </Link>
         <Link to="/dashboard/marine-map">
-          <Button className="h-24 bg-gradient-wave flex flex-col items-center justify-center space-y-2 w-full">
+          <Button className="h-24 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 flex flex-col items-center justify-center space-y-2 w-full text-white">
             <Globe className="h-6 w-6" />
             <span>3D Ocean Map</span>
           </Button>
         </Link>
-        <Link to="/dashboard/research-hub">"
-          <Button className="h-24 bg-gradient-coral flex flex-col items-center justify-center space-y-2 w-full">
+        <Link to="/dashboard/research-hub">
+          <Button className="h-24 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 flex flex-col items-center justify-center space-y-2 w-full text-white">
             <BookOpen className="h-6 w-6" />
             <span>Research Hub</span>
           </Button>
@@ -180,7 +180,7 @@ const Dashboard = () => {
       {/* Features Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
         {basicFeatures.map((feature, index) => (
-          <Card key={index} className="hover:shadow-wave transition-all duration-300 hover:-translate-y-1">
+          <Card key={index} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <feature.icon className={`h-6 w-6 ${feature.color}`} />
@@ -199,7 +199,7 @@ const Dashboard = () => {
         ))}
 
         {isAdvancedUser && advancedFeatures.map((feature, index) => (
-          <Card key={`advanced-${index}`} className="hover:shadow-wave transition-all duration-300 hover:-translate-y-1 border-accent/20">
+          <Card key={`advanced-${index}`} className="hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-accent/20">
             <CardHeader>
               <div className="flex items-center space-x-2">
                 <feature.icon className={`h-6 w-6 ${feature.color}`} />
@@ -214,7 +214,7 @@ const Dashboard = () => {
             </CardHeader>
             <CardContent>
               <Link to={feature.link}>
-                <Button className="w-full bg-gradient-coral hover:opacity-90">
+                <Button className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white">
                   Access Now
                 </Button>
               </Link>
@@ -224,10 +224,10 @@ const Dashboard = () => {
       </div>
 
       {/* Quick Actions */}
-      <Card className="bg-gradient-subtle">
+      <Card className="bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-gray-800 dark:to-blue-900">
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
-            <Waves className="h-5 w-5 text-blue-600" />
+            <Waves className="h-5 w-5 text-blue-600 dark:text-blue-400" />
             <span>Quick Actions</span>
           </CardTitle>
           <CardDescription>
