@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useTheme } from "@/contexts/ThemeContext";
 import { Crown, Check, Star, TrendingUp, Database, FileText, MapPin, Users } from "lucide-react";
 
 const PremiumPage = () => {
+  const { theme } = useTheme();
   const premiumFeatures = [
     {
       category: "Advanced Analytics",
@@ -249,10 +251,18 @@ const PremiumPage = () => {
             </div>
           </div>
           <div className="flex justify-center space-x-4">
-            <Button variant="secondary" size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button variant="secondary" size="lg" className={
+              theme === 'ocean' 
+                ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
+                : 'bg-white text-primary hover:bg-white/90'
+            }>
               Start Free Trial
             </Button>
-            <Button variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
+            <Button variant="outline" size="lg" className={
+              theme === 'ocean' 
+                ? 'border-white/40 text-white hover:bg-white/20' 
+                : 'border-white text-white hover:bg-white/10'
+            }>
               Schedule Demo
             </Button>
           </div>

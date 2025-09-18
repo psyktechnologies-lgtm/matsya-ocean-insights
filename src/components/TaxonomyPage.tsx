@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/hooks/use-toast";
+import { useTheme } from "@/contexts/ThemeContext";
 import { 
   Search, 
   Filter, 
@@ -23,6 +24,7 @@ import {
 } from "lucide-react";
 
 const TaxonomyPage = () => {
+  const { theme } = useTheme();
   const [searchTerm, setSearchTerm] = useState("");
   const [taxonomyDatasets, setTaxonomyDatasets] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -210,10 +212,18 @@ const TaxonomyPage = () => {
 
         <TabsContent value="browse" className="space-y-4">
           <div className="mb-6">
-            <Card className="bg-gradient-to-r from-ocean/10 to-blue-500/10 border-ocean/20">
+            <Card className={
+              theme === 'ocean' 
+                ? 'bg-gradient-to-r from-white/25 to-blue-500/30 border-white/20' 
+                : 'bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 border-blue-200 dark:border-blue-800'
+            }>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Database className="h-5 w-5 text-ocean" />
+                  <Database className={`h-5 w-5 ${
+                    theme === 'ocean' 
+                      ? 'text-cyan-300' 
+                      : 'text-blue-600 dark:text-blue-400'
+                  }`} />
                   Enhanced Taxonomy Backend
                 </CardTitle>
                 <CardDescription>
@@ -399,7 +409,11 @@ const TaxonomyPage = () => {
                   {uploadProgress > 0 && (
                     <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
                       <div 
-                        className="bg-ocean h-2 rounded-full transition-all duration-300" 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          theme === 'ocean' 
+                            ? 'bg-cyan-400' 
+                            : 'bg-blue-600 dark:bg-blue-400'
+                        }`} 
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
@@ -407,7 +421,11 @@ const TaxonomyPage = () => {
                 </div>
                 
                 <Button 
-                  className="w-full bg-ocean hover:bg-ocean/90"
+                  className={`w-full ${
+                    theme === 'ocean' 
+                      ? 'bg-cyan-500 hover:bg-cyan-600 text-white' 
+                      : 'bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600'
+                  }`}
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -488,7 +506,11 @@ const TaxonomyPage = () => {
                   </div>
                 </div>
                 
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                <div className={`mt-4 p-4 rounded-lg ${
+                  theme === 'ocean' 
+                    ? 'bg-white/25 border border-white/20' 
+                    : 'bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800'
+                }`}>
                   <p className="text-sm text-blue-800 font-medium">Required Fields:</p>
                   <ul className="text-sm text-blue-700 mt-1 space-y-1">
                     <li>• Scientific Name</li>
@@ -512,7 +534,11 @@ const TaxonomyPage = () => {
                     taxonomyDatasets.map((dataset: any, index) => (
                       <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                            theme === 'ocean' 
+                              ? 'bg-white/30' 
+                              : 'bg-green-100 dark:bg-green-900/30'
+                          }`}>
                             <CheckCircle className="h-5 w-5 text-green-600" />
                           </div>
                           <div>

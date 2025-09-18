@@ -2,10 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Waves, TrendingUp, Users, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useTheme } from "@/contexts/ThemeContext";
 import heroImage from "@/assets/hero-ocean.jpg";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
 
 const LandingPage = () => {
+  const { theme } = useTheme();
   const features = [
     {
       icon: Waves,
@@ -109,7 +111,11 @@ const LandingPage = () => {
             Join researchers and policymakers using MATSYA for cutting-edge marine data analysis
           </p>
           <Link to="/auth">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90 font-semibold px-8 py-4">
+            <Button size="lg" className={`font-semibold px-8 py-4 ${
+              theme === 'ocean' 
+                ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
+                : 'bg-white text-primary hover:bg-white/90'
+            }`}>
               Start Your Journey
             </Button>
           </Link>

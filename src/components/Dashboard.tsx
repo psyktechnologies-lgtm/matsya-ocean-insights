@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { useTheme } from "@/contexts/ThemeContext";
 import MarineMap from "@/components/MarineMap";
 import { 
   BarChart3, 
@@ -27,6 +28,7 @@ interface UserProfile {
 }
 
 const Dashboard = () => {
+  const { theme } = useTheme();
   const [profile, setProfile] = useState<UserProfile | null>(null);
 
   useEffect(() => {
@@ -277,12 +279,28 @@ const Dashboard = () => {
               <div className="space-y-1">
                 <p className="text-sm opacity-90">Become a verified researcher or policy maker</p>
                 <div className="flex space-x-2">
-                  <Badge variant="secondary" className="bg-white/20 text-white">Real-time Data</Badge>
-                  <Badge variant="secondary" className="bg-white/20 text-white">Advanced Analytics</Badge>
-                  <Badge variant="secondary" className="bg-white/20 text-white">Research Tools</Badge>
+                  <Badge variant="secondary" className={
+                    theme === 'ocean' 
+                      ? 'bg-white/40 text-white border-white/20' 
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  }>Real-time Data</Badge>
+                  <Badge variant="secondary" className={
+                    theme === 'ocean' 
+                      ? 'bg-white/40 text-white border-white/20' 
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  }>Advanced Analytics</Badge>
+                  <Badge variant="secondary" className={
+                    theme === 'ocean' 
+                      ? 'bg-white/40 text-white border-white/20' 
+                      : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                  }>Research Tools</Badge>
                 </div>
               </div>
-              <Button variant="secondary" className="bg-white text-primary hover:bg-white/90">
+              <Button variant="secondary" className={
+                theme === 'ocean' 
+                  ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
+                  : 'bg-white text-primary hover:bg-white/90'
+              }>
                 Learn More
               </Button>
             </div>

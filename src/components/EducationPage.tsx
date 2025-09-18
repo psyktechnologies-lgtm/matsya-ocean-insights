@@ -1,9 +1,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/contexts/ThemeContext";
 import { BookOpen, Play, Clock, Users, Fish, Waves, Leaf } from "lucide-react";
 
 const EducationPage = () => {
+  const { theme } = useTheme();
   const learningModules = [
     {
       id: 1,
@@ -257,7 +259,11 @@ const EducationPage = () => {
               <p className="text-sm">Advanced Research</p>
             </div>
           </div>
-          <Button variant="secondary" className="w-full mt-4 bg-white text-primary hover:bg-white/90">
+          <Button variant="secondary" className={`w-full mt-4 ${
+            theme === 'ocean' 
+              ? 'bg-white/40 text-gray-900 hover:bg-white/50 border-white/20' 
+              : 'bg-white text-primary hover:bg-white/90'
+          }`}>
             Start Your Learning Journey
           </Button>
         </CardContent>
