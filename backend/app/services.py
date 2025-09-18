@@ -122,6 +122,187 @@ def process_edna_file(file_content: str, filename: str) -> Dict[str, Union[int, 
                 'error': 'Unable to detect file format'
             }
 
+async def process_taxonomy_file(content: bytes, filename: str, data_format: str) -> Dict[str, Union[int, float, str]]:
+    """Process taxonomy database files and extract metadata."""
+    try:
+        # Decode content based on file type
+        if filename.endswith('.xlsx'):
+            # For Excel files, we'd use pandas/openpyxl in production
+            content_str = "Excel file processing not fully implemented in demo"
+            record_count = 0
+        else:
+            content_str = content.decode('utf-8')
+            
+        # Analyze based on data format
+        if data_format.lower() == 'darwin_core':
+            return analyze_darwin_core(content_str)
+        elif data_format.lower() in ['csv', 'tsv']:
+            return analyze_csv_taxonomy(content_str, filename)
+        elif data_format.lower() == 'json':
+            return analyze_json_taxonomy(content_str)
+        else:
+            return analyze_generic_taxonomy(content_str, filename)
+            
+    except Exception as e:
+        return {
+            'record_count': 0,
+            'species_count': 0,
+            'file_format': data_format,
+            'quality_score': 0.0,
+            'error': f'Processing error: {str(e)}'
+        }
+
+def analyze_darwin_core(content: str) -> Dict[str, Union[int, float, str]]:
+    """Analyze Darwin Core taxonomy format."""
+    lines = content.strip().split('\n')
+    header_line = lines[0] if lines else ""
+    
+    # Look for Darwin Core standard fields
+    expected_fields = ['scientificName', 'kingdom', 'phylum', 'class', 'order', 'family', 'genus', 'species']
+    found_fields = [field for field in expected_fields if field in header_line]
+    
+    record_count = len(lines) - 1 if len(lines) > 1 else 0
+    species_count = 0
+    kingdoms = set()
+    
+    # Process records to count species and kingdoms
+    for line in lines[1:]:
+        if line.strip():
+            fields = line.split('\t') if '\t' in line else line.split(',')
+            if len(fields) >= 2:
+                species_count += 1
+                # Try to extract kingdom (typically first few fields)
+                if len(fields) > 1:
+                    kingdoms.add(fields[1].strip('"').strip())
+    
+    quality_score = (len(found_fields) / len(expected_fields)) * 100
+    
+    return {
+        'record_count': record_count,
+        'species_count': species_count,
+        'kingdom_count': len(kingdoms),
+        'kingdoms': list(kingdoms)[:5],  # First 5 kingdoms
+        'file_format': 'darwin_core',
+        'found_fields': found_fields,
+        'quality_score': round(quality_score, 2)
+    }
+
+def analyze_csv_taxonomy(content: str, filename: str) -> Dict[str, Union[int, float, str]]:
+    """Analyze CSV/TSV taxonomy files."""
+    lines = content.strip().split('\n')
+    delimiter = '\t' if filename.endswith('.tsv') else ','
+    
+    header_line = lines[0] if lines else ""
+    headers = [h.strip('"').strip() for h in header_line.split(delimiter)]
+    
+    # Look for taxonomy-related columns
+    taxonomy_fields = []
+    for header in headers:
+        if any(term in header.lower() for term in ['scientific', 'species', 'genus', 'family', 'kingdom', 'phylum', 'class', 'order']):
+            taxonomy_fields.append(header)
+    
+    record_count = len(lines) - 1 if len(lines) > 1 else 0
+    species_count = 0
+    unique_species = set()
+    
+    # Count unique species
+    scientific_name_col = None
+    for i, header in enumerate(headers):
+        if 'scientific' in header.lower() or 'species' in header.lower():
+            scientific_name_col = i
+            break
+    
+    if scientific_name_col is not None:
+        for line in lines[1:]:
+            if line.strip():
+                fields = [f.strip('"').strip() for f in line.split(delimiter)]
+                if len(fields) > scientific_name_col:
+                    species_name = fields[scientific_name_col]
+                    if species_name:
+                        unique_species.add(species_name)
+        species_count = len(unique_species)
+    else:
+        species_count = record_count  # Fallback estimate
+    
+    quality_score = min(100, (len(taxonomy_fields) / 7) * 100)  # 7 main taxonomic ranks
+    
+    return {
+        'record_count': record_count,
+        'species_count': species_count,
+        'taxonomy_fields': taxonomy_fields,
+        'file_format': 'csv' if delimiter == ',' else 'tsv',
+        'quality_score': round(quality_score, 2)
+    }
+
+def analyze_json_taxonomy(content: str) -> Dict[str, Union[int, float, str]]:
+    """Analyze JSON taxonomy files."""
+    import json
+    
+    try:
+        data = json.loads(content)
+        
+        if isinstance(data, list):
+            record_count = len(data)
+            species_count = 0
+            taxonomy_fields = set()
+            
+            # Analyze first few records to identify structure
+            for item in data[:10]:
+                if isinstance(item, dict):
+                    species_count += 1
+                    taxonomy_fields.update(item.keys())
+            
+            quality_score = 95.0  # JSON is well-structured
+            
+        elif isinstance(data, dict):
+            # Single record or nested structure
+            record_count = 1
+            species_count = 1
+            taxonomy_fields = list(data.keys())
+            quality_score = 90.0
+            
+        else:
+            record_count = 0
+            species_count = 0
+            taxonomy_fields = []
+            quality_score = 0.0
+        
+        return {
+            'record_count': record_count,
+            'species_count': species_count,
+            'taxonomy_fields': list(taxonomy_fields)[:10],  # First 10 fields
+            'file_format': 'json',
+            'quality_score': quality_score
+        }
+        
+    except json.JSONDecodeError:
+        return {
+            'record_count': 0,
+            'species_count': 0,
+            'file_format': 'json',
+            'quality_score': 0.0,
+            'error': 'Invalid JSON format'
+        }
+
+def analyze_generic_taxonomy(content: str, filename: str) -> Dict[str, Union[int, float, str]]:
+    """Analyze generic taxonomy files."""
+    lines = content.strip().split('\n')
+    record_count = len([line for line in lines if line.strip()])
+    
+    # Estimate species count based on content patterns
+    species_patterns = ['species', 'scientific', 'binomial', 'genus']
+    species_mentions = sum(content.lower().count(pattern) for pattern in species_patterns)
+    species_count = min(record_count, species_mentions)
+    
+    quality_score = 50.0  # Generic estimate
+    
+    return {
+        'record_count': record_count,
+        'species_count': species_count,
+        'file_format': 'generic',
+        'quality_score': quality_score
+    }
+
 # Mock database / cache
 _mock_species: List[SpeciesOccurrence] = [
     SpeciesOccurrence(

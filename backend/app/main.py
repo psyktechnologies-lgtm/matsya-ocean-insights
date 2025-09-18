@@ -144,6 +144,105 @@ async def upload_edna_sample(
         raise HTTPException(status_code=500, detail=f"Upload processing failed: {str(e)}")
 
 
+@app.post("/api/taxonomy/upload")
+async def upload_taxonomy_data(
+    file: UploadFile = File(...),
+    dataset_name: str = Form(...),
+    data_format: str = Form(...),
+    source: str = Form(...),
+    description: Optional[str] = Form(None)
+):
+    """Upload taxonomy database files (Darwin Core, CSV, TSV, Excel)."""
+    try:
+        # Validate file type for taxonomy data
+        allowed_extensions = ['csv', 'tsv', 'txt', 'xlsx', 'dwc', 'xml', 'json']
+        file_extension = file.filename.lower().split('.')[-1] if file.filename else ''
+        
+        if file_extension not in allowed_extensions:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid file type for taxonomy. Allowed: {', '.join(allowed_extensions)}"
+            )
+        
+        # Check file size (max 500MB for taxonomy databases)
+        max_size = 500 * 1024 * 1024  # 500MB
+        content = await file.read()
+        
+        if len(content) > max_size:
+            raise HTTPException(status_code=400, detail="File size exceeds 500MB limit")
+        
+        # Process taxonomy file content
+        taxonomy_analysis = await services.process_taxonomy_file(
+            content, file.filename or 'unknown', data_format
+        )
+        
+        # Create taxonomy dataset record
+        dataset_data = {
+            "id": f"taxonomy_{dataset_name.replace(' ', '_').lower()}",
+            "dataset_name": dataset_name,
+            "data_format": data_format,
+            "source": source,
+            "description": description,
+            "file_name": file.filename,
+            "file_size": len(content),
+            "file_type": file.content_type,
+            "upload_date": "2024-01-15T10:30:00Z",
+            "status": "uploaded",
+            "processing_status": "completed",
+            **taxonomy_analysis  # Include taxonomy analysis results
+        }
+        
+        # Broadcast taxonomy upload notification
+        asyncio.create_task(manager.broadcast({
+            "type": "taxonomy_upload", 
+            "dataset_name": dataset_name,
+            "analysis": taxonomy_analysis
+        }))
+        
+        return JSONResponse(content=dataset_data)
+        
+    except HTTPException:
+        raise
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="File must be text-based")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Taxonomy upload failed: {str(e)}")
+
+
+@app.get("/api/taxonomy/datasets")
+async def list_taxonomy_datasets():
+    """List uploaded taxonomy datasets."""
+    # Mock taxonomy datasets
+    return [
+        {
+            "id": "taxonomy_worms_2024",
+            "dataset_name": "WoRMS Marine Taxa 2024",
+            "data_format": "darwin_core",
+            "source": "World Register of Marine Species",
+            "description": "Comprehensive marine species taxonomy database",
+            "upload_date": "2024-01-15T10:30:00Z",
+            "status": "active",
+            "record_count": 245892,
+            "species_count": 180543,
+            "kingdoms": ["Animalia", "Plantae", "Chromista"],
+            "file_size": 125000000
+        },
+        {
+            "id": "taxonomy_fishbase_2024",
+            "dataset_name": "FishBase Taxonomy",
+            "data_format": "csv",
+            "source": "FishBase",
+            "description": "Global fish species database with taxonomic hierarchy",
+            "upload_date": "2024-01-12T14:20:00Z",
+            "status": "active",
+            "record_count": 34567,
+            "species_count": 34567,
+            "kingdoms": ["Animalia"],
+            "file_size": 45000000
+        }
+    ]
+
+
 @app.get("/api/edna-samples")
 async def list_edna_samples():
     """List uploaded eDNA samples."""
