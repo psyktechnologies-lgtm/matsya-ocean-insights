@@ -10,6 +10,8 @@ import AuthPage from "@/components/AuthPage";
 import ProfileSetup from "@/components/ProfileSetup";
 import DashboardLayout from "@/components/DashboardLayout";
 import Dashboard from "@/components/Dashboard";
+import ResearchDashboard from "@/components/ResearchDashboard";
+import ResearchPublishingPage from "@/components/ResearchPublishingPage";
 import ChatbotPage from "@/components/ChatbotPage";
 import AnalyticsPage from "@/components/AnalyticsPage";
 import EducationPage from "@/components/EducationPage";
@@ -23,6 +25,8 @@ import OtolithPage from "@/components/OtolithPage";
 import EDNAPage from "@/components/EDNAPage";
 import CorrelationAnalysisPage from "@/components/CorrelationAnalysisPage";
 import APIDocumentationPage from "@/components/APIDocumentationPage";
+import MarineMap from "@/components/MarineMap";
+import SpeciesExplorer from "@/components/SpeciesExplorer";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 
@@ -50,6 +54,10 @@ const App = () => (
                 </ProtectedRoute>
               }>
                 <Route index element={<Dashboard />} />
+                <Route path="research-hub" element={<ResearchDashboard />} />
+                <Route path="research-publishing" element={<ResearchPublishingPage />} />
+                <Route path="marine-map" element={<MarineMap />} />
+                <Route path="species" element={<SpeciesExplorer />} />
                 <Route path="chatbot" element={<ChatbotPage />} />
                 <Route path="analytics" element={<AnalyticsPage />} />
                 <Route path="education" element={<EducationPage />} />

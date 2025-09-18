@@ -60,10 +60,11 @@ const DashboardSidebar = () => {
 
   const basicNavItems = [
     { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { title: "Research Hub", url: "/dashboard/research-hub", icon: BookOpen },
     { title: "AI Assistant", url: "/dashboard/chatbot", icon: MessageCircle },
     { title: "Analytics", url: "/dashboard/analytics", icon: BarChart3 },
     { title: "Education", url: "/dashboard/education", icon: BookOpen },
-    { title: "Research Hub", url: "/dashboard/research", icon: BookOpen },
+    { title: "Research Tools", url: "/dashboard/research", icon: BookOpen },
     { title: "Community", url: "/dashboard/community", icon: Users },
   ];
 

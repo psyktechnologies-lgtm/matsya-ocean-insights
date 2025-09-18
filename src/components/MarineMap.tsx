@@ -1,9 +1,15 @@
 
 import React, { useRef, useEffect, useState } from 'react';
-import { Box, CircularProgress, Typography, IconButton, Drawer, List, ListItem, ListItemText, Chip, Button } from '@mui/material';
+import { Box, CircularProgress, Typography, IconButton, Drawer, List, ListItem, ListItemText, Chip, Button, Slider, FormControlLabel, Switch, ButtonGroup } from '@mui/material';
 import * as Cesium from 'cesium';
 import RoomIcon from '@mui/icons-material/Room';
 import LayersIcon from '@mui/icons-material/Layers';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ThreeDRotationIcon from '@mui/icons-material/ThreeDRotation';
+import MyLocationIcon from '@mui/icons-material/MyLocation';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ThermostatIcon from '@mui/icons-material/Thermostat';
 import { SpeciesOccurrence } from './SpeciesExplorer';
 import { fetchSpecies } from '@/lib/api';
 import { useWebSocket } from '@/hooks/useWebSocket';
@@ -12,6 +18,29 @@ import type { Species } from '../types/database';
 
 // Cesium Ion access token
 Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1N2JjYWI1Ni0zMTk1LTQ5YWEtYTkyYy1mYjQzZjc0YjQwMGQiLCJpZCI6MzQxODgxLCJpYXQiOjE3NTgwNDMxODB9.I43fy6JSp5CAA3v1JRBFzNX_S-VdytgwqOT-j4chVEg';
+
+// Helper functions for color mapping
+const getTemperatureColor = (temp: number): string => {
+  // Temperature range: 0-30°C mapped to blue-red spectrum
+  const normalized = Math.max(0, Math.min(1, temp / 30));
+  const red = Math.floor(255 * normalized);
+  const blue = Math.floor(255 * (1 - normalized));
+  return `rgb(${red}, 100, ${blue})`;
+};
+
+const getSalinityColor = (salinity: number): string => {
+  // Salinity range: 30-40 PSU mapped to green spectrum
+  const normalized = Math.max(0, Math.min(1, (salinity - 30) / 10));
+  const green = Math.floor(255 * normalized);
+  return `rgb(50, ${green}, 100)`;
+};
+
+const getDepthColor = (depth: number): string => {
+  // Depth range: 0-5000m mapped to light-dark blue spectrum
+  const normalized = Math.max(0, Math.min(1, depth / 5000));
+  const darkness = Math.floor(255 * (1 - normalized));
+  return `rgb(0, ${darkness}, 255)`;
+};
 
 // Sample species data
 const sampleSpecies: SpeciesOccurrence[] = [
@@ -43,13 +72,32 @@ interface MarineMapProps {
   speciesData?: SpeciesOccurrence[];
 }
 
+interface DataLayer {
+  id: string;
+  name: string;
+  type: 'species' | 'temperature' | 'salinity' | 'depth' | 'edna';
+  visible: boolean;
+  color: string;
+  icon: React.ReactNode;
+}
+
 const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) => {
   const cesiumContainer = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Cesium.Viewer | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedSpecies, setSelectedSpecies] = useState<SpeciesOccurrence | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [layer, setLayer] = useState<'species' | 'heatmap' | 'temperature' | 'depth'>('species');
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const [cameraHeight, setCameraHeight] = useState(1000000);
+  
+  // Data layers state
+  const [dataLayers, setDataLayers] = useState<DataLayer[]>([
+    { id: 'species', name: 'Species Distribution', type: 'species', visible: true, color: '#0077be', icon: <RoomIcon /> },
+    { id: 'temperature', name: 'Sea Temperature', type: 'temperature', visible: false, color: '#ff4444', icon: <ThermostatIcon /> },
+    { id: 'salinity', name: 'Salinity Levels', type: 'salinity', visible: false, color: '#44ff44', icon: <VisibilityIcon /> },
+    { id: 'depth', name: 'Ocean Depth', type: 'depth', visible: false, color: '#4444ff', icon: <LayersIcon /> },
+    { id: 'edna', name: 'eDNA Samples', type: 'edna', visible: false, color: '#ff44ff', icon: <RoomIcon /> }
+  ]);
 
   const queryClient = useQueryClient();
 
@@ -74,20 +122,154 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
           vrButton: false,
           infoBox: true,
           selectionIndicator: true,
+          shouldAnimate: true,
         });
 
-        // Set initial view to Bay of Bengal region
+        // Remove default camera controls restrictions to allow full globe access
+        viewerRef.current.scene.screenSpaceCameraController.enableRotate = true;
+        viewerRef.current.scene.screenSpaceCameraController.enableTranslate = true;
+        viewerRef.current.scene.screenSpaceCameraController.enableZoom = true;
+        viewerRef.current.scene.screenSpaceCameraController.enableTilt = true;
+        viewerRef.current.scene.screenSpaceCameraController.enableLook = true;
+        
+        // Remove camera height restrictions for full globe access
+        viewerRef.current.scene.screenSpaceCameraController.minimumZoomDistance = 100;
+        viewerRef.current.scene.screenSpaceCameraController.maximumZoomDistance = 50000000;
+
+        // Set initial view to show global ocean view
         viewerRef.current.camera.setView({
-          destination: Cesium.Cartesian3.fromDegrees(91.5, 22.2, 1000000), // Bay of Bengal
+          destination: Cesium.Cartesian3.fromDegrees(0, 0, 15000000), // Global view
           orientation: {
             heading: Cesium.Math.toRadians(0),
-            pitch: Cesium.Math.toRadians(-45),
+            pitch: Cesium.Math.toRadians(-30),
             roll: 0.0,
           },
         });
 
+        // Add real-time data layers
+        addTemperatureLayer();
+        addSalinityLayer();
+        addDepthLayer();
+
         setLoading(false);
       }
+    };
+
+    const addTemperatureLayer = () => {
+      if (!viewerRef.current) return;
+      
+      // Add sample temperature data points
+      const temperatureData = [
+        { lat: 25.0, lon: -80.0, temp: 26.5 },
+        { lat: 40.0, lon: -70.0, temp: 18.2 },
+        { lat: 60.0, lon: 10.0, temp: 12.1 },
+        { lat: -20.0, lon: 150.0, temp: 24.8 },
+        { lat: 0.0, lon: 0.0, temp: 27.3 }
+      ];
+
+      temperatureData.forEach((point, index) => {
+        const entity = viewerRef.current!.entities.add({
+          id: `temp-${index}`,
+          position: Cesium.Cartesian3.fromDegrees(point.lon, point.lat),
+          point: {
+            pixelSize: 15,
+            color: Cesium.Color.fromCssColorString(getTemperatureColor(point.temp)),
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            show: false, // Initially hidden
+          },
+          label: {
+            text: `${point.temp}°C`,
+            font: '10pt monospace',
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(0, -30),
+            show: false,
+          },
+          description: `Sea Temperature: ${point.temp}°C`,
+        });
+        (entity as any).layerType = 'temperature';
+      });
+    };
+
+    const addSalinityLayer = () => {
+      if (!viewerRef.current) return;
+      
+      // Add sample salinity data points
+      const salinityData = [
+        { lat: 25.0, lon: -80.0, salinity: 36.2 },
+        { lat: 40.0, lon: -70.0, salinity: 35.8 },
+        { lat: 60.0, lon: 10.0, salinity: 34.9 },
+        { lat: -20.0, lon: 150.0, salinity: 35.5 },
+        { lat: 0.0, lon: 0.0, salinity: 34.7 }
+      ];
+
+      salinityData.forEach((point, index) => {
+        const entity = viewerRef.current!.entities.add({
+          id: `salinity-${index}`,
+          position: Cesium.Cartesian3.fromDegrees(point.lon, point.lat),
+          point: {
+            pixelSize: 12,
+            color: Cesium.Color.fromCssColorString(getSalinityColor(point.salinity)),
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            show: false,
+          },
+          label: {
+            text: `${point.salinity} PSU`,
+            font: '10pt monospace',
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(0, -30),
+            show: false,
+          },
+          description: `Salinity: ${point.salinity} PSU`,
+        });
+        (entity as any).layerType = 'salinity';
+      });
+    };
+
+    const addDepthLayer = () => {
+      if (!viewerRef.current) return;
+      
+      // Add sample depth measurement points
+      const depthData = [
+        { lat: 25.0, lon: -80.0, depth: 3500 },
+        { lat: 40.0, lon: -70.0, depth: 2800 },
+        { lat: 60.0, lon: 10.0, depth: 1200 },
+        { lat: -20.0, lon: 150.0, depth: 4200 },
+        { lat: 0.0, lon: 0.0, depth: 3800 }
+      ];
+
+      depthData.forEach((point, index) => {
+        const entity = viewerRef.current!.entities.add({
+          id: `depth-${index}`,
+          position: Cesium.Cartesian3.fromDegrees(point.lon, point.lat),
+          point: {
+            pixelSize: 10,
+            color: Cesium.Color.fromCssColorString(getDepthColor(point.depth)),
+            outlineColor: Cesium.Color.WHITE,
+            outlineWidth: 2,
+            show: false,
+          },
+          label: {
+            text: `${point.depth}m`,
+            font: '10pt monospace',
+            fillColor: Cesium.Color.WHITE,
+            outlineColor: Cesium.Color.BLACK,
+            outlineWidth: 2,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            pixelOffset: new Cesium.Cartesian2(0, -30),
+            show: false,
+          },
+          description: `Ocean Depth: ${point.depth}m`,
+        });
+        (entity as any).layerType = 'depth';
+      });
     };
 
     initializeCesium();
@@ -185,80 +367,323 @@ const MarineMap: React.FC<MarineMapProps> = ({ speciesData = sampleSpecies }) =>
     }
   }, [messages, queryClient]);
 
-  // Layer controls
-  const handleLayerChange = (newLayer: typeof layer) => {
-    setLayer(newLayer);
+  // Camera control functions
+  const zoomIn = () => {
     if (viewerRef.current) {
-      switch (newLayer) {
-        case 'species':
-          // Show species markers
-          viewerRef.current.entities.values.forEach(entity => {
-            if (entity.billboard) entity.show = true;
-          });
-          break;
-        case 'heatmap':
-          // TODO: Add heatmap layer
-          break;
-        case 'temperature':
-          // TODO: Add temperature layer
-          break;
-        case 'depth':
-          // TODO: Add depth layer
-          break;
+      const camera = viewerRef.current.camera;
+      const currentHeight = camera.positionCartographic.height;
+      const newHeight = Math.max(100, currentHeight * 0.5);
+      camera.zoomIn(currentHeight - newHeight);
+      setCameraHeight(newHeight);
+    }
+  };
+
+  const zoomOut = () => {
+    if (viewerRef.current) {
+      const camera = viewerRef.current.camera;
+      const currentHeight = camera.positionCartographic.height;
+      const newHeight = Math.min(50000000, currentHeight * 2);
+      camera.zoomOut(newHeight - currentHeight);
+      setCameraHeight(newHeight);
+    }
+  };
+
+  const resetView = () => {
+    if (viewerRef.current) {
+      viewerRef.current.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(0, 0, 15000000),
+        orientation: {
+          heading: Cesium.Math.toRadians(0),
+          pitch: Cesium.Math.toRadians(-30),
+          roll: 0.0,
+        },
+      });
+      setCameraHeight(15000000);
+    }
+  };
+
+  const goToLocation = (lat: number, lon: number, height: number = 1000000) => {
+    if (viewerRef.current) {
+      viewerRef.current.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
+        duration: 2.0,
+      });
+    }
+  };
+
+  // Layer management functions
+  const toggleLayer = (layerId: string) => {
+    setDataLayers(prev => prev.map(layer => 
+      layer.id === layerId ? { ...layer, visible: !layer.visible } : layer
+    ));
+
+    if (viewerRef.current) {
+      const layer = dataLayers.find(l => l.id === layerId);
+      if (layer) {
+        viewerRef.current.entities.values.forEach(entity => {
+          if ((entity as any).layerType === layer.type) {
+            entity.show = !layer.visible; // Toggle visibility
+            if (entity.label && entity.label.show) {
+              (entity.label.show as any).setValue(!layer.visible);
+            }
+          }
+        });
       }
     }
   };
 
+  const showAllLayers = () => {
+    setDataLayers(prev => prev.map(layer => ({ ...layer, visible: true })));
+    if (viewerRef.current) {
+      viewerRef.current.entities.values.forEach(entity => {
+        entity.show = true;
+        if (entity.label && entity.label.show) {
+          (entity.label.show as any).setValue(true);
+        }
+      });
+    }
+  };
+
+  const hideAllLayers = () => {
+    setDataLayers(prev => prev.map(layer => ({ ...layer, visible: false })));
+    if (viewerRef.current) {
+      viewerRef.current.entities.values.forEach(entity => {
+        if ((entity as any).layerType !== 'species') { // Keep species visible
+          entity.show = false;
+          if (entity.label && entity.label.show) {
+            (entity.label.show as any).setValue(false);
+          }
+        }
+      });
+    }
+  };
+
   return (
-    <Box sx={{ position: 'relative', height: '600px', width: '100%', borderRadius: 2, overflow: 'hidden', boxShadow: 3 }}>
+    <Box sx={{ position: 'relative', height: '100vh', width: '100%', bgcolor: '#000' }}>
       {loading && (
         <Box sx={{ position: 'absolute', top: '50%', left: '50%', zIndex: 2, transform: 'translate(-50%, -50%)' }}>
           <CircularProgress />
+          <Typography sx={{ mt: 2, color: 'white' }}>Loading 3D Globe...</Typography>
         </Box>
       )}
+      
       <Box ref={cesiumContainer} sx={{ height: '100%', width: '100%' }} />
-      {/* Layer Controls */}
-      <Box sx={{ position: 'absolute', top: 16, right: 16, zIndex: 3, bgcolor: 'rgba(255,255,255,0.9)', borderRadius: 2, p: 1, boxShadow: 2 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>Layers</Typography>
-        <Button startIcon={<LayersIcon />} size="small" variant={layer === 'species' ? 'contained' : 'outlined'} onClick={() => handleLayerChange('species')}>Species</Button>
-        <Button size="small" variant={layer === 'heatmap' ? 'contained' : 'outlined'} onClick={() => handleLayerChange('heatmap')}>Heatmap</Button>
-        <Button size="small" variant={layer === 'temperature' ? 'contained' : 'outlined'} onClick={() => handleLayerChange('temperature')}>Temperature</Button>
-        <Button size="small" variant={layer === 'depth' ? 'contained' : 'outlined'} onClick={() => handleLayerChange('depth')}>Depth</Button>
+      
+      {/* Enhanced Camera Controls */}
+      {controlsVisible && (
+        <Box sx={{ position: 'absolute', top: 20, left: 20, zIndex: 3 }}>
+          <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', borderRadius: 2, p: 2, minWidth: 200 }}>
+            <Typography variant="subtitle2" sx={{ color: 'white', mb: 2 }}>Camera Controls</Typography>
+            
+            {/* Zoom Controls */}
+            <Box sx={{ mb: 2 }}>
+              <ButtonGroup variant="contained" size="small" fullWidth>
+                <Button onClick={zoomIn} startIcon={<ZoomInIcon />}>Zoom In</Button>
+                <Button onClick={zoomOut} startIcon={<ZoomOutIcon />}>Zoom Out</Button>
+              </ButtonGroup>
+            </Box>
+            
+            {/* Navigation Controls */}
+            <Box sx={{ mb: 2 }}>
+              <ButtonGroup variant="outlined" size="small" fullWidth>
+                <Button onClick={resetView} startIcon={<MyLocationIcon />}>Reset View</Button>
+                <Button onClick={() => goToLocation(0, 0)} startIcon={<ThreeDRotationIcon />}>Center</Button>
+              </ButtonGroup>
+            </Box>
+            
+            {/* Quick Location Buttons */}
+            <Typography variant="caption" sx={{ color: 'white', display: 'block', mb: 1 }}>Quick Locations:</Typography>
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              <Button size="small" variant="outlined" onClick={() => goToLocation(25, -80)}>Atlantic</Button>
+              <Button size="small" variant="outlined" onClick={() => goToLocation(0, 160)}>Pacific</Button>
+              <Button size="small" variant="outlined" onClick={() => goToLocation(22, 91)}>Bay of Bengal</Button>
+              <Button size="small" variant="outlined" onClick={() => goToLocation(-30, 20)}>Southern Ocean</Button>
+            </Box>
+            
+            {/* Camera Height Indicator */}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="caption" sx={{ color: 'white' }}>
+                Height: {(cameraHeight / 1000).toFixed(0)} km
+              </Typography>
+              <Slider
+                value={Math.log10(cameraHeight)}
+                min={2} // 100m
+                max={7.7} // 50,000km
+                step={0.1}
+                onChange={(_, value) => {
+                  const newHeight = Math.pow(10, value as number);
+                  setCameraHeight(newHeight);
+                  if (viewerRef.current) {
+                    const camera = viewerRef.current.camera;
+                    const position = camera.positionCartographic;
+                    camera.setView({
+                      destination: Cesium.Cartesian3.fromRadians(
+                        position.longitude,
+                        position.latitude,
+                        newHeight
+                      )
+                    });
+                  }
+                }}
+                size="small"
+                sx={{ color: 'white' }}
+              />
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Enhanced Data Layer Controls */}
+      <Box sx={{ position: 'absolute', top: 20, right: 20, zIndex: 3 }}>
+        <Box sx={{ bgcolor: 'rgba(0,0,0,0.8)', borderRadius: 2, p: 2, minWidth: 250 }}>
+          <Typography variant="subtitle2" sx={{ color: 'white', mb: 2, display: 'flex', alignItems: 'center' }}>
+            <LayersIcon sx={{ mr: 1 }} />
+            Data Layers
+          </Typography>
+          
+          {/* Layer Toggle Controls */}
+          <Box sx={{ mb: 2 }}>
+            {dataLayers.map((layer) => (
+              <Box key={layer.id} sx={{ mb: 1 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={layer.visible}
+                      onChange={() => toggleLayer(layer.id)}
+                      size="small"
+                      sx={{ 
+                        '& .MuiSwitch-switchBase.Mui-checked': { color: layer.color },
+                        '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': { backgroundColor: layer.color }
+                      }}
+                    />
+                  }
+                  label={
+                    <Box sx={{ display: 'flex', alignItems: 'center', color: 'white' }}>
+                      <Box sx={{ mr: 1, color: layer.color }}>{layer.icon}</Box>
+                      <Typography variant="body2">{layer.name}</Typography>
+                    </Box>
+                  }
+                />
+              </Box>
+            ))}
+          </Box>
+          
+          {/* Layer Management Buttons */}
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button size="small" variant="outlined" onClick={showAllLayers} fullWidth>
+              Show All
+            </Button>
+            <Button size="small" variant="outlined" onClick={hideAllLayers} fullWidth>
+              Hide All
+            </Button>
+          </Box>
+        </Box>
       </Box>
+
+      {/* Toggle Controls Visibility */}
+      <IconButton 
+        sx={{ position: 'absolute', bottom: 80, left: 20, zIndex: 3, bgcolor: 'rgba(0,0,0,0.7)', color: 'white' }}
+        onClick={() => setControlsVisible(!controlsVisible)}
+      >
+        <VisibilityIcon />
+      </IconButton>
+
+      {/* Species Details Popup */}
+      {selectedSpecies && (
+        <Box sx={{ 
+          position: 'absolute', 
+          bottom: 20, 
+          left: 20, 
+          zIndex: 4, 
+          bgcolor: 'rgba(0,0,0,0.9)', 
+          borderRadius: 2, 
+          boxShadow: 3, 
+          p: 3, 
+          minWidth: 350,
+          color: 'white'
+        }}>
+          <Typography variant="h6" sx={{ color: '#4fc3f7' }}>{selectedSpecies.scientificName}</Typography>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>{selectedSpecies.commonName}</Typography>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>Family: {selectedSpecies.family}</Typography>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Location: {selectedSpecies.latitude.toFixed(4)}, {selectedSpecies.longitude.toFixed(4)}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Depth: {selectedSpecies.depth ? `${selectedSpecies.depth} m` : 'N/A'}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 0.5 }}>
+            Conservation Status: {selectedSpecies.conservationStatus}
+          </Typography>
+          <Typography variant="body2" sx={{ mb: 2 }}>Data Source: {selectedSpecies.dataSource}</Typography>
+          <Button 
+            variant="outlined" 
+            size="small" 
+            onClick={() => setSelectedSpecies(null)}
+            sx={{ color: 'white', borderColor: 'white' }}
+          >
+            Close
+          </Button>
+        </Box>
+      )}
+
       {/* Side Drawer for filtered species */}
       <Drawer anchor="right" open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 320, p: 2 }}>
-          <Typography variant="h6">Filtered Species</Typography>
+        <Box sx={{ width: 350, p: 2, bgcolor: '#1a1a1a', height: '100%', color: 'white' }}>
+          <Typography variant="h6" sx={{ mb: 2 }}>Marine Species</Typography>
           <List>
             {speciesData.map((s) => (
               <ListItem 
                 key={s.id} 
-                onClick={() => setSelectedSpecies(s)}
-                sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+                onClick={() => {
+                  setSelectedSpecies(s);
+                  goToLocation(s.latitude, s.longitude, 500000);
+                  setDrawerOpen(false);
+                }}
+                sx={{ 
+                  cursor: 'pointer', 
+                  borderRadius: 1,
+                  mb: 1,
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.2)' } 
+                }}
               >
-                <ListItemText primary={s.scientificName} secondary={s.commonName} />
-                <Chip label={s.conservationStatus} size="small" />
+                <ListItemText 
+                  primary={
+                    <Typography variant="subtitle2" sx={{ color: '#4fc3f7' }}>
+                      {s.scientificName}
+                    </Typography>
+                  } 
+                  secondary={
+                    <Box>
+                      <Typography variant="body2" sx={{ color: 'white' }}>{s.commonName}</Typography>
+                      <Chip 
+                        label={s.conservationStatus} 
+                        size="small" 
+                        sx={{ mt: 1, bgcolor: 'rgba(255,255,255,0.2)', color: 'white' }}
+                      />
+                    </Box>
+                  } 
+                />
               </ListItem>
             ))}
           </List>
         </Box>
       </Drawer>
-      {/* Species Details Popup */}
-      {selectedSpecies && (
-        <Box sx={{ position: 'absolute', bottom: 24, left: 24, zIndex: 4, bgcolor: 'white', borderRadius: 2, boxShadow: 3, p: 2, minWidth: 300 }}>
-          <Typography variant="h6">{selectedSpecies.scientificName}</Typography>
-          <Typography variant="subtitle1">{selectedSpecies.commonName}</Typography>
-          <Typography variant="body2">Family: {selectedSpecies.family}</Typography>
-          <Typography variant="body2">Location: {selectedSpecies.latitude}, {selectedSpecies.longitude}</Typography>
-          <Typography variant="body2">Depth: {selectedSpecies.depth ? `${selectedSpecies.depth} m` : '-'}</Typography>
-          <Typography variant="body2">Conservation Status: {selectedSpecies.conservationStatus}</Typography>
-          <Typography variant="body2">Data Source: {selectedSpecies.dataSource}</Typography>
-          <Button sx={{ mt: 1 }} onClick={() => setSelectedSpecies(null)}>Close</Button>
-        </Box>
-      )}
-      {/* Open Drawer Button */}
-      <IconButton sx={{ position: 'absolute', top: 16, left: 16, zIndex: 3, bgcolor: 'white', boxShadow: 2 }} onClick={() => setDrawerOpen(true)}>
-        <RoomIcon color="primary" />
+
+      {/* Open Species Drawer Button */}
+      <IconButton 
+        sx={{ 
+          position: 'absolute', 
+          bottom: 20, 
+          right: 20, 
+          zIndex: 3, 
+          bgcolor: 'rgba(0,0,0,0.7)', 
+          color: 'white',
+          '&:hover': { bgcolor: 'rgba(0,0,0,0.9)' }
+        }} 
+        onClick={() => setDrawerOpen(true)}
+      >
+        <RoomIcon />
       </IconButton>
     </Box>
   );

@@ -40,6 +40,13 @@ const Dashboard = () => {
 
   const basicFeatures = [
     {
+      title: "Research Hub",
+      description: "Choose your research pathway: taxonomy, otolith, eDNA, or publishing",
+      icon: BookOpen,
+      link: "/dashboard/research-hub",
+      color: "text-purple-600"
+    },
+    {
       title: "AI Marine Assistant",
       description: "Ask questions about marine ecosystems, species, and conservation",
       icon: MessageCircle,
