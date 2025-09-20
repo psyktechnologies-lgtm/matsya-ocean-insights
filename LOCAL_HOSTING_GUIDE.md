@@ -303,6 +303,67 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - [ ] Backend running on http://localhost:8000
 - [ ] Both services communicating properly
 
+## 🐟 AI Chatbot Integration Setup
+
+The platform includes **Matsya AI**, an advanced marine research assistant that supports multiple AI services:
+- **OpenAI GPT-4**: Advanced reasoning and marine knowledge
+- **Anthropic Claude**: Cost-effective and excellent for research analysis
+- **Automatic Selection**: Uses the best available service based on your API keys
+
+### **Setup AI Chatbot:**
+
+1. **Choose Your AI Service:**
+   ```bash
+   # Option 1: OpenAI GPT-4 (Recommended)
+   # Visit: https://platform.openai.com/api-keys
+   
+   # Option 2: Anthropic Claude (Cost-effective)  
+   # Visit: https://console.anthropic.com/
+   
+   # Option 3: Both (Matsya AI will auto-select)
+   ```
+
+2. **Configure Environment Variables:**
+   ```bash
+   # Copy example environment file
+   cd backend
+   copy .env.example .env
+   
+   # Edit .env file and add your API key(s):
+   # OPENAI_API_KEY=sk-your-openai-key-here
+   # ANTHROPIC_API_KEY=your-anthropic-key-here
+   ```
+
+3. **Install AI Packages:**
+   ```bash
+   # Install both OpenAI and Claude packages
+   conda run -p .conda pip install openai anthropic
+   ```
+
+4. **Matsya AI Features:**
+   - ✅ **Dual AI Support**: OpenAI GPT-4 + Anthropic Claude
+   - ✅ **Automatic Service Selection**: Uses best available AI service
+   - ✅ **Real-time streaming** responses via WebSocket
+   - ✅ **Marine research context** awareness from platform data
+   - ✅ **Species identification** guidance and analysis
+   - ✅ **eDNA analysis** assistance and interpretation
+   - ✅ **Oceanographic data** interpretation and insights
+   - ✅ **Research methodology** support and best practices
+   - ✅ **HTTP fallback** mode for reliability
+
+### **Alternative AI Services:**
+
+If you don't have OpenAI access, you can modify the chatbot to use:
+- **Anthropic Claude**: More cost-effective, excellent for research
+- **Google Gemini**: Free tier available  
+- **Local LLMs**: Ollama, LM Studio for offline usage
+
+### **Chat Endpoints:**
+- `POST /api/chat` - Send message to Matsya AI
+- `WS /ws/chat/{user_id}` - Real-time streaming chat with Matsya AI
+- `GET /api/chat/conversation/{user_id}` - Get conversation stats
+- `DELETE /api/chat/conversation/{user_id}` - Clear conversation
+
 ## 🆘 Support
 
 If you encounter issues:

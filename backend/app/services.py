@@ -777,6 +777,29 @@ async def classify_image(payload: bytes, filename: str = "unknown") -> dict:
     return result
 
 
+# Helper functions for chatbot context
+async def get_recent_species_names() -> list[str]:
+    """Get list of recently analyzed species names."""
+    # This would normally query your database
+    return [
+        "Thunnus albacares",
+        "Katsuwonus pelamis", 
+        "Coryphaena hippurus",
+        "Scomber scombrus",
+        "Gadus morhua"
+    ]
+
+
+async def get_recent_classifications() -> list[dict]:
+    """Get recent classification results."""
+    # This would normally query your database
+    return [
+        {"species": "Thunnus albacares", "confidence": 0.95, "timestamp": "2024-01-15T10:30:00Z"},
+        {"species": "Katsuwonus pelamis", "confidence": 0.87, "timestamp": "2024-01-15T09:15:00Z"},
+        {"species": "Coryphaena hippurus", "confidence": 0.92, "timestamp": "2024-01-14T16:20:00Z"}
+    ]
+
+
 # Advanced Otolith Analysis System
 class OtolithAnalyzer:
     """Advanced otolith image processing and age determination."""

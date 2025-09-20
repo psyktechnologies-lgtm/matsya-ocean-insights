@@ -3,8 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import asyncio
 import json
+import os
 from typing import Optional
+from dotenv import load_dotenv
 from . import services, schemas
+from .chatbot import marine_chatbot
+
+# Load environment variables from .env file
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'backend', '.env')
+load_dotenv(env_path)
 
 app = FastAPI(title="Matsya Ocean Insights - Backend")
 
@@ -570,3 +577,99 @@ async def websocket_endpoint(websocket: WebSocket):
         manager.disconnect(websocket)
     except Exception:
         manager.disconnect(websocket)
+
+
+# Marine Research Chatbot Endpoints
+@app.post("/api/chat")
+async def chat_with_matsya_ai(
+    message: str = Form(...),
+    user_id: str = Form(default="default"),
+    include_context: bool = Form(default=True)
+):
+    """Chat with Matsya AI, the marine research assistant."""
+    try:
+        # Gather platform context if requested
+        context = None
+        if include_context:
+            context = {
+                "recent_species": await services.get_recent_species_names(),
+                "location": {"name": "Research Area", "lat": 0, "lng": 0},  # Could be dynamic
+                "edna_results": {"species_count": 15},  # From recent analysis
+                "recent_classifications": await services.get_recent_classifications()
+            }
+        
+        response = await marine_chatbot.chat(message, user_id, context)
+        return JSONResponse(content=response)
+        
+    except Exception as e:
+        return JSONResponse(
+            status_code=500, 
+            content={"success": False, "error": f"Chat service failed: {str(e)}"}
+        )
+
+
+@app.websocket("/ws/chat/{user_id}")
+async def websocket_chat(websocket: WebSocket, user_id: str):
+    """WebSocket endpoint for real-time streaming chat."""
+    await websocket.accept()
+    try:
+        await websocket.send_json({
+            "type": "connected",
+            "message": "Connected to Matsya AI, your marine research assistant!"
+        })
+        
+        while True:
+            # Receive message from client
+            data = await websocket.receive_json()
+            
+            if data.get("type") == "chat":
+                message = data.get("message", "")
+                include_context = data.get("include_context", True)
+                
+                # Gather context
+                context = None
+                if include_context:
+                    context = {
+                        "recent_species": await services.get_recent_species_names(),
+                        "recent_classifications": await services.get_recent_classifications()
+                    }
+                
+                # Stream response
+                async for chunk in marine_chatbot.stream_chat(message, user_id, context):
+                    await websocket.send_json(chunk)
+            
+            elif data.get("type") == "clear":
+                marine_chatbot.clear_conversation(user_id)
+                await websocket.send_json({
+                    "type": "cleared",
+                    "message": "Conversation history cleared"
+                })
+            
+            elif data.get("type") == "summary":
+                summary = marine_chatbot.get_conversation_summary(user_id)
+                await websocket.send_json({
+                    "type": "summary",
+                    "data": summary
+                })
+    
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        await websocket.send_json({
+            "type": "error",
+            "error": str(e)
+        })
+
+
+@app.get("/api/chat/conversation/{user_id}")
+async def get_conversation_summary(user_id: str):
+    """Get conversation summary and statistics."""
+    summary = marine_chatbot.get_conversation_summary(user_id)
+    return JSONResponse(content=summary)
+
+
+@app.delete("/api/chat/conversation/{user_id}")
+async def clear_conversation(user_id: str):
+    """Clear conversation history for a user."""
+    marine_chatbot.clear_conversation(user_id)
+    return JSONResponse(content={"message": "Conversation cleared successfully"})

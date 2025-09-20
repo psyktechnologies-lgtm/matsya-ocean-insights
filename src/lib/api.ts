@@ -13,7 +13,7 @@ try {
   generatedSupabase = null;
 }
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:8000/api';
+const API_BASE = (import.meta.env.VITE_API_BASE as string) || 'http://localhost:8001/api';
 
 let authToken: string | null = null;
 
