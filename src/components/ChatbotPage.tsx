@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, Trash2, BarChart3 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -52,13 +52,13 @@ const ChatbotPage = ({ className }: ChatbotPageProps) => {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [connectWebSocket]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  const connectWebSocket = () => {
+  const connectWebSocket = useCallback(() => {
     try {
       const wsUrl = `ws://localhost:8001/ws/chat/${userId}`;
       wsRef.current = new WebSocket(wsUrl);
@@ -85,7 +85,7 @@ const ChatbotPage = ({ className }: ChatbotPageProps) => {
     } catch (error) {
       console.error('Failed to connect WebSocket:', error);
     }
-  };
+  }, [userId]);
 
   const handleWebSocketMessage = (data: any) => {
     switch (data.type) {
